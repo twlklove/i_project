@@ -8,9 +8,10 @@ git config --global credential.helper store
 git remote -v
 git branch 
 
-# creat branch or switch branch
+# creat branch, switch branch or del branch
 git checkout -B i_branch_1 
 git checkout i_branch_1
+git branch -D i_branch_1
 
 # update or download files
 git update
