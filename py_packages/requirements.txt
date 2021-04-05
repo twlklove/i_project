@@ -51,7 +51,7 @@ PySocks==1.6.8
 python-dateutil==2.8.1
 pytz==2017.2
 pyudev==0.21.0
-pyxdg==0.25
+pyxdg==0.26
 PyYAML==3.12
 requests==2.25.1
 requests-file==1.4.3
