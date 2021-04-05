@@ -23,7 +23,7 @@ importlib-metadata==3.10.0
 iniparse==0.4
 Keras-Preprocessing==1.1.2
 langtable==0.0.51
-lxml==4.2.3
+lxml==4.6.3
 Markdown==3.3.4
 numpy==1.19.5
 oauthlib==3.1.0
