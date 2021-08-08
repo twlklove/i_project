@@ -1,0 +1,8 @@
+cpu : super_pi 20
+mem : memtester 1G 50
+IO : (1) time dd if=/dev/zero of=test bs=1M count=4096
+         see wa% or speed of writing harddisk using "top" or "iostat" 
+     (2) fio: random, order, mix 
+     (3) iozone: test file system
+net : iperf, netperf, qperf
+http: ab
