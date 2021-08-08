@@ -22,3 +22,21 @@ git add xxx
 git commit -m "xx"
 git push
 
+#
+create a new repositorie named "i_project"  in web github
+
+#
+ssh-keygen -t rsa -C "12345678@qq.com"
+
+#config
+git config --global user.name "xxxx" 
+git config --global user.email xxxxx@qq.com 
+#create a new repository on the command line
+echo "# i_project" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/twlklove/i_project.git
+git push -u origin main
+
