@@ -1,0 +1,18 @@
+#include <sys/shm.h>
+#include <unistd.h>
+
+#define TEXT_SZ 2048
+struct shared_use_st
+{
+    int written;
+    char text[TEXT_SZ];
+};
+
+int ret = 0;
+int size = sizeof(struct shared_use_st);
+int key = 1234;
+
+int shmid = shmget((key_t)key, size, 0666|IPC_CREAT);
+void *shm = shmat(shmid, (void*)0, 0);
+ret = shmdt(shm);
+ret = shmctl(shmid, IPC_RMID, 0)
