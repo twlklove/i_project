@@ -1,0 +1,32 @@
+#/usr/bin
+
+net_info=""
+if [ $? -ne 0 ]
+then
+    net_info=`cat $1 | sed 's/ /~/g'`
+else
+    net_info=`cat /proc/net/netstat | sed 's/ /~/g'`
+fi
+
+datas=(`echo ${net_info} | cut -d' ' -f1-`)
+data_num=${#datas[@]}
+let i=0
+while [ $i -le ${data_num} ]
+do
+    keys=(`echo ${datas[$i]} | sed 's/~/ /g'`)
+    values=(`echo ${datas[$i+1]} | sed 's/~/ /g'`)
+    num=${#keys[@]} 
+    let j=0
+    while [ $j -le ${num} ]
+    do
+        if [ "Y${keys[$j]}" != "Y" ]
+        then
+            echo ${keys[$j]} :      ${values[$j]}
+        fi 
+
+        let j=$j+1
+    done
+
+    let i=$i+2 
+done
+

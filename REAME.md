@@ -40,3 +40,5 @@ git branch -M main
 git remote add origin https://github.com/twlklove/i_project.git
 git push -u origin main
 
+#use token
+git remote set-url origin https://<your_token>@github.com/<USERNAME>/<REPO>.git
