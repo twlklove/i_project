@@ -1,9 +1,19 @@
+# 12Mbps(full speed); 2.0 : 480Mbps(high speed); 3.0: 5Gbps(super high speed); 3.1: 10Gps(super high speed+); 4.0: 40Gbps
 modprobe usbmon
 mount -t debugfs none_debugs /sys/kernel/debug
 
 tcpdump -D
 tcpdump -i usbmon0
+cat /sys/kernel/debug/usb/usbmon/0u
 
 ls /sys/kernel/debug/usb/usbmon/
 cat /sys/kernel/debug/usb/devices
+cat /sys/kernel/debug/usb/devices
+
+cat /sys/kernel/debug/usb/devices
+lsusb
+lsusb -tv
+find /dev/bus/
+lsusb -D/dev/bus/usb/002/004
+cat /var/lib/usbutils/usb.ids
 
