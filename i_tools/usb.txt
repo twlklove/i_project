@@ -1,0 +1,9 @@
+modprobe usbmon
+mount -t debugfs none_debugs /sys/kernel/debug
+
+tcpdump -D
+tcpdump -i usbmon0
+
+ls /sys/kernel/debug/usb/usbmon/
+cat /sys/kernel/debug/usb/devices
+

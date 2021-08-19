@@ -1,0 +1,8 @@
+#反编译
+git clone https://github.com/radareorg/radare2.git
+radare2/sys/install.sh
+
+r2pm install r2dec 
+#note: don't use strip for run
+r2 -A ./run
+
