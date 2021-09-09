@@ -5,6 +5,7 @@ import struct
 import cv2
 import shutil
 from log import *
+from path import *
 
 def decode_idx3_ubyte(file):
     magic = 0
@@ -98,16 +99,24 @@ def parser_mnist_data(path):
     export_img(test_dir, test_img_ubyte, test_label_ubyte)
 
 def decode(path, data_file, label_file, to_dir): 
+    if os.path.isdir(to_dir):
+        shutil.rmtree(to_dir) #os.removedirs/os.rmdir
+
     img_ubyte = os.path.join(path, data_file)
     label_ubyte = os.path.join(path, label_file)
     export_img(to_dir, img_ubyte, label_ubyte)
 
 if __name__ == '__main__':    
     #parser_mnist_data(path)
-    path='/mnt/hgfs/i_share/i_test'
-    data_file = 'train_data_idx_ubyte.gz'
-    label_file = 'train_label_idx_ubyte.gz'
+    path = os.path.join(base_path, 'dst')
+    data_file = 'train_data_idx3_ubyte.gz'
+    label_file = 'train_label_idx1_ubyte.gz'
     to_dir = os.path.join(path, 'train')
-    shutil.rmtree(to_dir) #os.removedirs/os.rmdir
     decode(path, data_file, label_file, to_dir)
+
+    data_file = 'test_data_idx3_ubyte.gz'
+    label_file = 'test_label_idx1_ubyte.gz'
+    to_dir = os.path.join(path, 'test')
+    decode(path, data_file, label_file, to_dir)
+
 

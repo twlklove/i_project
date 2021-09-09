@@ -5,7 +5,9 @@ import gzip
 import base64
 import struct
 import cv2
+import shutil
 from log import *
+from path import *
 
 def convert_to_binary_bytestr(*value, endian='<i4'):
     #np.frombuffer(np.array([1,2,3], dtype='>i1').tobytes(), dtype=np.uint8) 
@@ -76,19 +78,30 @@ def encode_label(src_data, file):
             log_d(count, ' : ', label)
 
 def encode(path, data_file, label_file):
+    if os.path.isfile(data_file):
+        os.remove(data_file)
+
+    if os.path.isfile(label_file):
+        os.remove(label_file)
+
     files = get_files(path)
     encode_data(files, data_file)
     encode_label(files, label_file)
 
 
 if __name__ == '__main__':
-    base_path = '/mnt/hgfs/i_share/i_test'
     #base_path = os.path.join(base_path, 'fashion-mnist', 'train')
+    base_path = os.path.join(base_path)
+
     path = os.path.join(base_path, 'src', 'train')
-
-    train_data_file = os.path.join(base_path, 'train_data_idx_ubyte.gz')
-    train_label_file = os.path.join(base_path, 'train_label_idx_ubyte.gz')
-
+    train_data_file = os.path.join(base_path, 'dst', 'train_data_idx3_ubyte.gz')
+    train_label_file = os.path.join(base_path, 'dst', 'train_label_idx1_ubyte.gz')
     encode(path, train_data_file, train_label_file)
+
+    path = os.path.join(base_path, 'src', 'test')
+    train_data_file = os.path.join(base_path, 'dst', 'test_data_idx3_ubyte.gz')
+    train_label_file = os.path.join(base_path, 'dst', 'test_label_idx1_ubyte.gz')
+    encode(path, train_data_file, train_label_file)
+
     exit()
      
