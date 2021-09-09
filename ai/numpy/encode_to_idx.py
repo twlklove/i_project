@@ -22,7 +22,7 @@ def get_files(path):
     files=[]
     for dir in dirs:
         for dp, dn, fn in os.walk(os.path.join(path, dir)):
-            log_d(dir, fn)
+            #log_d(dir, fn)
             random.shuffle(fn)
             for fn_tmp in fn :
                 files.append([dir, dp, fn_tmp])
@@ -51,9 +51,13 @@ def encode_data(src_data, file):
             path = os.path.join(dir, file_name)
             #content = cv2.imread(path) 
             content = cv2.imread(path, cv2.IMREAD_GRAYSCALE) 
+            if content is None:
+                log_d(path)
+                continue
+            log_d(count, path, ':', content.shape)
             content = cv2.resize(content, (num_rows, num_cols))
             lb.write(content)
-            log_d(count, path, ':', content.shape)
+            
  
             #with open(path, 'rb') as f:
             #    content = f.read()
@@ -75,7 +79,7 @@ def encode_label(src_data, file):
             count += 1 
             label = np.array(data[0], dtype='>u1').tobytes()
             lb.write(label)
-            log_d(count, ' : ', label)
+            #log_d(count, ' : ', label)
 
 def encode(path, data_file, label_file):
     if os.path.isfile(data_file):
