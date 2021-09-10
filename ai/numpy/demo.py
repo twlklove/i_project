@@ -174,7 +174,7 @@ def do_train_flower():
 
     model.summary()
 
-    epochs=10
+    epochs=5
     history = model.fit(
       train_ds,
       validation_data=val_ds,
