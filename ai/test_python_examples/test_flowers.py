@@ -7,6 +7,10 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, BatchNormalization, Activation, MaxPool2D, Dropout, Flatten, Dense
+from tensorflow.keras import Model
+
+np.set_printoptions(threshold=np.inf)
 
 def dump_img(data_dir):
     img_format = '*/*.jpg' #'roses/*'
@@ -23,6 +27,7 @@ def get_data(data_dir, img_size, batch_size=32):
         validation_split=0.2,
         subset="training",
         seed=123,
+        #color_mode='grayscale',
         image_size=img_size,
         batch_size=batch_size)
 
@@ -31,7 +36,8 @@ def get_data(data_dir, img_size, batch_size=32):
         validation_split=0.2,
         subset="validation",
         seed=123,
-        image_size=(img_height, img_width),
+        #color_mode='grayscale',
+        image_size=img_size,
         batch_size=batch_size)
     return train_ds, val_ds
 
@@ -83,10 +89,28 @@ def create_data_augmentation(input_shape) :
     )
     return data_augmentation
 
-def create_model(input_shape, num_classes):
-    path = 'saved_model/my_model'
-    if os.path.exists(path):
-        model = tf.keras.models.load_model(path)
+def create_model_ResNet50(model_dir, input_shape, num_classes):
+    if os.path.exists(model_dir):
+        model = tf.keras.models.load_model(model_dir)
+        if model is not None:
+            return model
+
+    #from tensorflow.keras.applications.resnet import ResNet50
+    #model = ResNet50(weights=None, input_shape=input_shape, classes=num_classes)
+    from tensorflow.keras.applications.resnet_v2 import ResNet50V2
+    model = ResNet50V2(weights=None, input_shape=input_shape, classes=num_classes)
+    return model
+def compile_model_ResNet50(model):
+    model.compile(optimizer='adam',
+                  loss='sparse_categorical_crossentropy',
+                  # loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                  metrics=['accuracy'])
+    model.summary()
+    return model
+
+def create_model(model_dir, input_shape, num_classes):
+    if os.path.exists(model_dir):
+        model = tf.keras.models.load_model(model_dir)
         if model is not None:
             return model
 
@@ -156,17 +180,18 @@ if __name__=='__main__':
     dataset_url = "https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz"
     data_dir = tf.keras.utils.get_file('flower_photos', origin=dataset_url, untar=True)
     data_dir = pathlib.Path(data_dir)
-    dump_img(data_dir)
-    save_dir = './saved_model'
-    if not os.path.exists(save_dir):
-        os.mkdir(save_dir)
+    #dump_img(data_dir)
+    model_dir = 'saved_model/my_model_1' #'saved_model/my_model'
+    #if not os.path.exists(model_dir):
+        #os.mkdir(model_dir)
 
-    epochs = 10
+    epochs = 3
     batch_size = 32
-    img_height = 60 #180
-    img_width = 60#180
+    img_height = 224 #60 #180
+    img_width = 224 #60#180
+    img_channel = 3
     img_size = (img_height, img_width)
-    input_shape = (img_height, img_width, 3)
+    input_shape = (img_height, img_width, img_channel)
 
     train_ds, val_ds = get_data(data_dir, img_size, batch_size)
     class_names = train_ds.class_names
@@ -174,21 +199,24 @@ if __name__=='__main__':
     train_ds, val_ds = prefetch_data(train_ds, val_ds)
     visualize_data(train_ds, class_names, input_shape, need_augmentation=False)
 
-    model = create_model(input_shape, len(class_names))
+    model = create_model(model_dir, input_shape, len(class_names))
     model = compile_model(model)
+    #model = create_model_ResNet50(model_dir, input_shape, len(class_names))
+    #model = compile_model_ResNet50(model)
+
     history = train_model(model, train_ds, val_ds, epochs)
 
     visualize_training_results(history, epochs)
 
     # Evaluate model, option
-    loss, acc = model.evaluate(val_ds, verbose=2) #test_images, test_labels,
-    print('accuracy: {:5.2f}%'.format(100 * acc))
+    #loss, acc = model.evaluate(val_ds, verbose=1) #test_images, test_labels,
+    #print('accuracy: {:5.2f}%'.format(100 * acc))
 
-    model.save('saved_model/my_model')  #save model
+    model.save(model_dir)  #save model
 
     sunflower_url = "https://storage.googleapis.com/download.tensorflow.org/example_images/592px-Red_sunflower.jpg"
     sunflower_path = tf.keras.utils.get_file('Red_sunflower', origin=sunflower_url)
-    img = PIL.Image.open(str(sunflower_path))
-    img.show()
+    #img = PIL.Image.open(str(sunflower_path))
+    #img.show()
     img = keras.preprocessing.image.load_img(sunflower_path, target_size=img_size)
     predict(model, class_names, img)
