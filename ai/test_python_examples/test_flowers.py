@@ -9,6 +9,9 @@ from tensorflow.keras import layers
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, BatchNormalization, Activation, MaxPool2D, Dropout, Flatten, Dense
 from tensorflow.keras import Model
+from tensorflow.keras.applications.vgg16 import VGG16
+from tensorflow.keras.applications.resnet import ResNet50
+from tensorflow.keras.applications.resnet_v2 import ResNet50V2
 
 np.set_printoptions(threshold=np.inf)
 
@@ -29,7 +32,8 @@ def get_data(data_dir, img_size, batch_size=32):
         seed=123,
         #color_mode='grayscale',
         image_size=img_size,
-        batch_size=batch_size)
+        batch_size=batch_size
+    )
 
     val_ds = tf.keras.preprocessing.image_dataset_from_directory(
         data_dir,
@@ -38,13 +42,35 @@ def get_data(data_dir, img_size, batch_size=32):
         seed=123,
         #color_mode='grayscale',
         image_size=img_size,
-        batch_size=batch_size)
+        batch_size= batch_size
+    )
     return train_ds, val_ds
 
-def prefetch_data(train_ds, val_ds):
+def prepare(ds, img_size=(224, 224), shuffle=False, augment=False):
     AUTOTUNE = tf.data.AUTOTUNE
-    train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
-    val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
+    resize_and_rescale = tf.keras.Sequential([
+        layers.experimental.preprocessing.Resizing(img_size[0], img_size[1]),
+        layers.experimental.preprocessing.Rescaling(1. / 255)
+    ])
+
+    data_augmentation = tf.keras.Sequential([
+        layers.experimental.preprocessing.RandomFlip("horizontal_and_vertical"),
+        layers.experimental.preprocessing.RandomRotation(0.2),
+        layers.experimental.preprocessing.RandomZoom(0.1),
+    ])
+
+    ds = ds.map(lambda x, y: (resize_and_rescale(x), y), num_parallel_calls=AUTOTUNE)
+    if shuffle:
+        ds = ds.cache().shuffle(1000)
+
+    if augment:
+        ds = ds.map(lambda x, y: (data_augmentation(x, training=True), y), num_parallel_calls=AUTOTUNE)
+
+    return ds.prefetch(buffer_size=AUTOTUNE)
+
+def prefetch_data(train_ds, val_ds, img_size=(224, 224)):
+    train_ds = prepare(train_ds, img_size, shuffle=True, augment=True)
+    val_ds = prepare(val_ds, img_size)
 
     return train_ds, val_ds
 
@@ -58,16 +84,10 @@ def normalize_data():
     print(np.min(first_image), np.max(first_image))
 '''
 
-def visualize_data(xx_ds, class_names, input_shape, need_augmentation=False) :
-    data_augmentation = None
-    if need_augmentation :
-        data_augmentation = create_data_augmentation(input_shape)
-
+def visualize_data(xx_ds, class_names, input_shape) :
     plt.figure(figsize=(10, 10))
     for images, labels in xx_ds.take(1):
         for i in range(9):
-            if need_augmentation:
-                images = data_augmentation(images)
             ax = plt.subplot(3, 3, i + 1)
             plt.imshow(images[i].numpy().astype("uint8"))
             plt.title(class_names[labels[i]])
@@ -79,7 +99,41 @@ def visualize_data(xx_ds, class_names, input_shape, need_augmentation=False) :
         print(labels_batch.shape)
         break
 
-def create_data_augmentation(input_shape) :
+def create_model(model_dir, input_shape, num_classes, model_name=''):
+    model = ''
+    if os.path.exists(model_dir):
+        try:
+            model = tf.keras.models.load_model(model_dir)
+            if model is not None:
+                return model
+        except IOError:
+            pass
+
+    if model_name == 'ResNet50':
+        model = ResNet50(weights=None, input_shape=input_shape, classes=num_classes)
+    elif model_name == 'ResNet50V2':
+        model = ResNet50V2(weights=None, input_shape=input_shape, classes=num_classes, include_top=False)
+        output = model.output
+        output = layers.Dropout(0.3)(output)
+        output = layers.GlobalAveragePooling2D(name='avg_pool')(output)
+        output = layers.Dense(num_classes, activation='softmax', name='predictions')(output)
+        model = Model(inputs=model.input, outputs=output)
+    elif model_name == 'VGG16':
+        model = VGG16(weights=None, input_shape=input_shape, classes=num_classes)
+    else:
+        model = create_default_model(input_shape, num_classes)
+
+    return model
+
+def compile_model(model):
+    model.compile(optimizer='adam',
+                  loss='sparse_categorical_crossentropy',
+                  metrics=['accuracy'])
+    model.summary()
+    return model
+
+def create_default_model(input_shape, num_classes):
+    '''
     data_augmentation = keras.Sequential(
         [
             layers.experimental.preprocessing.RandomFlip("horizontal", input_shape=input_shape),
@@ -87,37 +141,11 @@ def create_data_augmentation(input_shape) :
             layers.experimental.preprocessing.RandomZoom(0.1),
         ]
     )
-    return data_augmentation
+    '''
 
-def create_model_ResNet50(model_dir, input_shape, num_classes):
-    if os.path.exists(model_dir):
-        model = tf.keras.models.load_model(model_dir)
-        if model is not None:
-            return model
-
-    #from tensorflow.keras.applications.resnet import ResNet50
-    #model = ResNet50(weights=None, input_shape=input_shape, classes=num_classes)
-    from tensorflow.keras.applications.resnet_v2 import ResNet50V2
-    model = ResNet50V2(weights=None, input_shape=input_shape, classes=num_classes)
-    return model
-def compile_model_ResNet50(model):
-    model.compile(optimizer='adam',
-                  loss='sparse_categorical_crossentropy',
-                  # loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                  metrics=['accuracy'])
-    model.summary()
-    return model
-
-def create_model(model_dir, input_shape, num_classes):
-    if os.path.exists(model_dir):
-        model = tf.keras.models.load_model(model_dir)
-        if model is not None:
-            return model
-
-    data_augmentation = create_data_augmentation(input_shape)
     model = Sequential([
-        data_augmentation,
-        layers.experimental.preprocessing.Rescaling(1./255, input_shape=input_shape),
+        #data_augmentation,
+        #layers.experimental.preprocessing.Rescaling(1./255, input_shape=input_shape),
         layers.Conv2D(16, 3, padding='same', activation='relu'),
         layers.MaxPooling2D(),
         layers.Conv2D(32, 3, padding='same', activation='relu'),
@@ -127,15 +155,9 @@ def create_model(model_dir, input_shape, num_classes):
         layers.Dropout(0.2),
         layers.Flatten(),
         layers.Dense(128, activation='relu'),
-        layers.Dense(num_classes)
+        layers.Dense(num_classes),
+        layers.Softmax()
       ])
-    return model
-
-def compile_model(model):
-    model.compile(optimizer='adam',
-                  loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                  metrics=['accuracy'])
-    model.summary()
     return model
 
 def train_model(model, train_ds, val_ds, epochs):
@@ -176,36 +198,36 @@ def predict(model, class_names, img):
         .format(class_names[np.argmax(score)], 100 * np.max(score))
     )
 
-if __name__=='__main__':
-    dataset_url = "https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz"
-    data_dir = tf.keras.utils.get_file('flower_photos', origin=dataset_url, untar=True)
-    data_dir = pathlib.Path(data_dir)
-    #dump_img(data_dir)
-    model_dir = 'saved_model/my_model_1' #'saved_model/my_model'
-    #if not os.path.exists(model_dir):
-        #os.mkdir(model_dir)
+config_model = 'ResNet50V2' #'ResNet50V2' 'ResNet50' 'ResNet50V2'
+epochs = 15
+batch_size = 32
+img_height = 224 #224   # 60 #180
+img_width = 224 #224   #60#180
+img_channel = 3
 
-    epochs = 3
-    batch_size = 32
-    img_height = 224 #60 #180
-    img_width = 224 #60#180
-    img_channel = 3
+if __name__=='__main__':
+    #dataset_url = "https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz"
+    #data_dir = tf.keras.utils.get_file('flower_photos', origin=dataset_url, untar=True)
+    #data_dir = pathlib.Path(data_dir)
+    data_dir = 'E:/i_share/i_test4'
+    #dump_img(data_dir)
+    img_shape_str = str(img_height) + '_' + str(img_width ) + '_' + str(img_channel)
+    model_dir = os.path.join('saved_model', config_model+'_' + img_shape_str + '_model')
+
     img_size = (img_height, img_width)
     input_shape = (img_height, img_width, img_channel)
 
     train_ds, val_ds = get_data(data_dir, img_size, batch_size)
     class_names = train_ds.class_names
     print(class_names)
-    train_ds, val_ds = prefetch_data(train_ds, val_ds)
-    visualize_data(train_ds, class_names, input_shape, need_augmentation=False)
 
-    model = create_model(model_dir, input_shape, len(class_names))
+    train_ds, val_ds = prefetch_data(train_ds, val_ds, img_size)
+    print(len(train_ds))
+    #visualize_data(train_ds, class_names, input_shape)
+
+    model = create_model(model_dir, input_shape, len(class_names), model_name=config_model)
     model = compile_model(model)
-    #model = create_model_ResNet50(model_dir, input_shape, len(class_names))
-    #model = compile_model_ResNet50(model)
-
     history = train_model(model, train_ds, val_ds, epochs)
-
     visualize_training_results(history, epochs)
 
     # Evaluate model, option
@@ -214,7 +236,8 @@ if __name__=='__main__':
 
     model.save(model_dir)  #save model
 
-    sunflower_url = "https://storage.googleapis.com/download.tensorflow.org/example_images/592px-Red_sunflower.jpg"
+    #sunflower_url = "https://storage.googleapis.com/download.tensorflow.org/example_images/592px-Red_sunflower.jpg"
+    sunflower_url = 'E:/i_share/Red_sunflower.jpg'
     sunflower_path = tf.keras.utils.get_file('Red_sunflower', origin=sunflower_url)
     #img = PIL.Image.open(str(sunflower_path))
     #img.show()
