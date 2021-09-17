@@ -12,6 +12,7 @@ from tensorflow.keras import Model
 from tensorflow.keras.applications.vgg16 import VGG16
 from tensorflow.keras.applications.resnet import ResNet50
 from tensorflow.keras.applications.resnet_v2 import ResNet50V2
+from tensorflow.keras.applications.inception_resnet_v2 import InceptionResNetV2
 
 np.set_printoptions(threshold=np.inf)
 
@@ -100,7 +101,6 @@ def visualize_data(xx_ds, class_names, input_shape) :
         break
 
 def create_model(model_dir, input_shape, num_classes, model_name=''):
-    model = ''
     if os.path.exists(model_dir):
         try:
             model = tf.keras.models.load_model(model_dir)
@@ -108,7 +108,17 @@ def create_model(model_dir, input_shape, num_classes, model_name=''):
                 return model
         except IOError:
             pass
-
+    #from operator import methodcaller
+    #model = methodcaller(model_name)()(weights=None, input_shape=input_shape, classes=num_classes)
+    #f = getattr(model, 'fun_name')
+    #locals()[InceptionResNetV2]()
+    model = globals()[model_name](weights=None, input_shape=input_shape, classes=num_classes,include_top=False)
+    output = model.output
+    output = layers.Dropout(0.1)(output)
+    output = layers.GlobalAveragePooling2D(name='avg_pool')(output)
+    output = layers.Dense(num_classes, activation='softmax', name='predictions')(output)
+    model = Model(inputs=model.input, outputs=output)
+    '''
     if model_name == 'ResNet50':
         model = ResNet50(weights=None, input_shape=input_shape, classes=num_classes)
     elif model_name == 'ResNet50V2':
@@ -118,11 +128,13 @@ def create_model(model_dir, input_shape, num_classes, model_name=''):
         output = layers.GlobalAveragePooling2D(name='avg_pool')(output)
         output = layers.Dense(num_classes, activation='softmax', name='predictions')(output)
         model = Model(inputs=model.input, outputs=output)
+    elif model_name == 'InceptionResNetV2':
+        model = InceptionResNetV2(weights=None, input_shape=input_shape, classes=num_classes)
     elif model_name == 'VGG16':
         model = VGG16(weights=None, input_shape=input_shape, classes=num_classes)
     else:
         model = create_default_model(input_shape, num_classes)
-
+    '''
     return model
 
 def compile_model(model):
@@ -198,8 +210,8 @@ def predict(model, class_names, img):
         .format(class_names[np.argmax(score)], 100 * np.max(score))
     )
 
-config_model = 'ResNet50V2' #'ResNet50V2' 'ResNet50' 'ResNet50V2'
-epochs = 15
+config_model = 'InceptionResNetV2' # 'ResNet50V2' 'VGG16'
+epochs = 10
 batch_size = 32
 img_height = 224 #224   # 60 #180
 img_width = 224 #224   #60#180
