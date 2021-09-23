@@ -1,0 +1,3 @@
+https://www.cnblogs.com/X-knight/p/10421713.html
+https://github.com/vnpy/vnpy
+https://github.com/mementum/backtrader.git
