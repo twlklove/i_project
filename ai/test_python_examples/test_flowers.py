@@ -13,7 +13,8 @@ from tensorflow.keras.applications.vgg16 import VGG16
 from tensorflow.keras.applications.resnet import ResNet50
 from tensorflow.keras.applications.resnet_v2 import ResNet50V2
 from tensorflow.keras.applications.inception_resnet_v2 import InceptionResNetV2
-
+from tensorflow.keras.applications.efficientnet import EfficientNetB0, EfficientNetB7
+from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
 np.set_printoptions(threshold=np.inf)
 
 def dump_img(data_dir):
@@ -112,64 +113,45 @@ def create_model(model_dir, input_shape, num_classes, model_name=''):
     #model = methodcaller(model_name)()(weights=None, input_shape=input_shape, classes=num_classes)
     #f = getattr(model, 'fun_name')
     #locals()[InceptionResNetV2]()
-    model = globals()[model_name](weights=None, input_shape=input_shape, classes=num_classes,include_top=False)
-    output = model.output
-    output = layers.Dropout(0.1)(output)
-    output = layers.GlobalAveragePooling2D(name='avg_pool')(output)
-    output = layers.Dense(num_classes, activation='softmax', name='predictions')(output)
-    model = Model(inputs=model.input, outputs=output)
-    '''
-    if model_name == 'ResNet50':
-        model = ResNet50(weights=None, input_shape=input_shape, classes=num_classes)
-    elif model_name == 'ResNet50V2':
-        model = ResNet50V2(weights=None, input_shape=input_shape, classes=num_classes, include_top=False)
+    include_top = True #
+    model = globals()[model_name](weights=None, input_shape=input_shape, classes=num_classes,include_top=include_top)
+    if not include_top :
         output = model.output
-        output = layers.Dropout(0.3)(output)
+        model.add(layers.Flatten())
+        model.add(layers.Dense(128, activation='relu'))
+        output = layers.Dropout(0.1)(output)
         output = layers.GlobalAveragePooling2D(name='avg_pool')(output)
         output = layers.Dense(num_classes, activation='softmax', name='predictions')(output)
         model = Model(inputs=model.input, outputs=output)
-    elif model_name == 'InceptionResNetV2':
-        model = InceptionResNetV2(weights=None, input_shape=input_shape, classes=num_classes)
-    elif model_name == 'VGG16':
-        model = VGG16(weights=None, input_shape=input_shape, classes=num_classes)
-    else:
-        model = create_default_model(input_shape, num_classes)
-    '''
+
     return model
 
 def compile_model(model):
     model.compile(optimizer='adam',
-                  loss='sparse_categorical_crossentropy',
+                  loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), #'sparse_categorical_crossentropy',
                   metrics=['accuracy'])
+
     model.summary()
     return model
 
-def create_default_model(input_shape, num_classes):
-    '''
-    data_augmentation = keras.Sequential(
-        [
-            layers.experimental.preprocessing.RandomFlip("horizontal", input_shape=input_shape),
-            layers.experimental.preprocessing.RandomRotation(0.1),
-            layers.experimental.preprocessing.RandomZoom(0.1),
-        ]
-    )
-    '''
-
-    model = Sequential([
-        #data_augmentation,
-        #layers.experimental.preprocessing.Rescaling(1./255, input_shape=input_shape),
+def I_NET(weights=None, input_shape=None, classes=1000,include_top=True):
+    model = tf.keras.models.Sequential([
+        layers.Input(input_shape),
         layers.Conv2D(16, 3, padding='same', activation='relu'),
         layers.MaxPooling2D(),
         layers.Conv2D(32, 3, padding='same', activation='relu'),
         layers.MaxPooling2D(),
         layers.Conv2D(64, 3, padding='same', activation='relu'),
-        layers.MaxPooling2D(),
-        layers.Dropout(0.2),
-        layers.Flatten(),
-        layers.Dense(128, activation='relu'),
-        layers.Dense(num_classes),
-        layers.Softmax()
+        layers.MaxPooling2D()
       ])
+
+    if include_top :
+        model.add(layers.Flatten())
+        model.add(layers.Dense(128, activation='relu'))
+        model.add(layers.Dropout(0.2))
+        model.add(layers.Dense(classes))
+        model.add(layers.Softmax())
+
     return model
 
 def train_model(model, train_ds, val_ds, epochs):
@@ -210,11 +192,11 @@ def predict(model, class_names, img):
         .format(class_names[np.argmax(score)], 100 * np.max(score))
     )
 
-config_model = 'InceptionResNetV2' # 'ResNet50V2' 'VGG16'
-epochs = 10
+config_model = 'EfficientNetB7' #'InceptionResNetV2' #'I_NET' #'MobileNetV2' #'MobileNetV2' #InceptionResNetV2' #'ResNet50V2' #'VGG16'
+epochs = 3
 batch_size = 32
-img_height = 224 #224   # 60 #180
-img_width = 224 #224   #60#180
+img_height = 168 #224 #224   # 60 #180
+img_width = 168 #224 #224   #60#180
 img_channel = 3
 
 if __name__=='__main__':
