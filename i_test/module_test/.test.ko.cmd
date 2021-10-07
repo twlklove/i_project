@@ -1,0 +1,1 @@
+cmd_/home/i_work/i_opensource/i_project/module_test/test.ko := ld -r -m elf_x86_64  -z max-page-size=0x200000 -T ./scripts/module-common.lds  --build-id  -o /home/i_work/i_opensource/i_project/module_test/test.ko /home/i_work/i_opensource/i_project/module_test/test.o /home/i_work/i_opensource/i_project/module_test/test.mod.o ;  true
