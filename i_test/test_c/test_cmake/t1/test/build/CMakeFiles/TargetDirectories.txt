@@ -1,0 +1,3 @@
+/home/twlklove/i_work/test_cmake/test/build/CMakeFiles/rebuild_cache.dir
+/home/twlklove/i_work/test_cmake/test/build/CMakeFiles/edit_cache.dir
+/home/twlklove/i_work/test_cmake/test/build/CMakeFiles/run.dir

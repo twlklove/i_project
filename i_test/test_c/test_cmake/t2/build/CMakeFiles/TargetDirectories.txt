@@ -1,0 +1,13 @@
+/home/twlklove/i_work/test_cmake/t2/build/CMakeFiles/install/strip.dir
+/home/twlklove/i_work/test_cmake/t2/build/CMakeFiles/install/local.dir
+/home/twlklove/i_work/test_cmake/t2/build/CMakeFiles/edit_cache.dir
+/home/twlklove/i_work/test_cmake/t2/build/CMakeFiles/rebuild_cache.dir
+/home/twlklove/i_work/test_cmake/t2/build/CMakeFiles/list_install_components.dir
+/home/twlklove/i_work/test_cmake/t2/build/CMakeFiles/install.dir
+/home/twlklove/i_work/test_cmake/t2/build/src/CMakeFiles/install/strip.dir
+/home/twlklove/i_work/test_cmake/t2/build/src/CMakeFiles/install/local.dir
+/home/twlklove/i_work/test_cmake/t2/build/src/CMakeFiles/hello.dir
+/home/twlklove/i_work/test_cmake/t2/build/src/CMakeFiles/edit_cache.dir
+/home/twlklove/i_work/test_cmake/t2/build/src/CMakeFiles/rebuild_cache.dir
+/home/twlklove/i_work/test_cmake/t2/build/src/CMakeFiles/install.dir
+/home/twlklove/i_work/test_cmake/t2/build/src/CMakeFiles/list_install_components.dir

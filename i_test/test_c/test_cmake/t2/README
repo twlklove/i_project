@@ -1,0 +1,2 @@
+# need : cmake -DCMAKE_INTALL_PREFIX=/tmp/usr/ ..
+# default value of CMAKE_INSTALL_PREFIX is : /usr/local

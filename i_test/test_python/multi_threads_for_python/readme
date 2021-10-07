@@ -1,0 +1,21 @@
+Thread
+__init__()
+
+threading.Thread（group = None，target = None，name = None，args =（），kwargs = {}，*，daemon = None ）
+start()
+
+run（）
+join（timeout = None ）
+
+name
+getName（）
+setName（）
+
+ident
+get_ident() 
+
+is_alive（）
+
+daemon
+isDaemon（）
+setDaemon（）
