@@ -1,13 +1,14 @@
-#include "first.pb.h"
 #include <string>
 #include <fstream>
 #include <iostream>
+
+#include "hello.pb.h"
 
 using namespace std;
 
 int main(void) 
 { 
-	lm::helloworld msg; 
+	hello::helloworld msg; 
 	msg.set_id(101); 
 	msg.set_str("hello");
 
