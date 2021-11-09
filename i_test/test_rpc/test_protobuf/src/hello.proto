@@ -1,9 +1,23 @@
 syntax = "proto3";
-
+option cc_generic_services=true;
 package hello; 
 message helloworld 
 { 
    int32     id = 1;  // ID 
    string    str = 2;  // str 
    int32     opt = 3;  //optional field 
+}
+
+message MyRequest {
+    string text = 1;
+    int32 times = 2;
+}
+
+message MyResponse {
+    string text = 1;
+    bool result = 2;
+}
+
+service MyService {
+    rpc Fool (MyRequest) returns (MyResponse); 
 }

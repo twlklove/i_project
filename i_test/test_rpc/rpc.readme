@@ -19,3 +19,25 @@ RPC调用：
 3. 网络传输：远程调用往往用在网络上，客户端和服务端是通过网络连接的，故需要有一个网络传输层。
                      网络传输层需要把Call ID和序列化后的参数字节流传给服务端，然后再把序列化后的调用结果传回客户端。
                      大部分RPC框架都使用TCP协议，gRPC使用HTTP2，UDP也可以，
+
+grpc:
+local install :
+    export MY_INSTALL_DIR=$HOME/.local
+    mkdir -p $MY_INSTALL_DIR
+    export PATH="$MY_INSTALL_DIR/bin:$PATH"
+    sudo apt install -y cmake
+    mkdir -p cmake/build
+    pushd cmake/build
+    cmake -DgRPC_INSTALL=ON       -DgRPC_BUILD_TESTS=OFF       -DCMAKE_INSTALL_PREFIX=$MY_INSTALL_DIR       ../..
+    make -j
+    make install
+    popd
+
+for example :
+    cd examples/cpp/helloworld/
+    ls
+    mkdir -p cmake/build
+    pushd cmake/build
+    cmake -DCMAKE_PREFIX_PATH=$MY_INSTALL_DIR ../..
+    make -j
+
