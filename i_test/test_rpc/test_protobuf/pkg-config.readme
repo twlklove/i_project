@@ -1,0 +1,10 @@
+pkg-config 是通过库提供的一个.pc文件获得库的各种必要信息的，包括版本信息、编译和连接需要的参数等。
+pkg-config –cflags protobuf：列出指定共享库的预处理和编译flags
+pkg-config –libs protobuf：列出指定共享库的链接flags
+
+也就是说：创建时将使用一个库所需要的-I -lxx写在一个.pc文件中；使用此库时，直接gcc编译时加上`pkg-config --cflags --libs xx`便可
+
+for example: protobuf:
+/usr/local/lib/pkgconfig/protobuf.pc
+gcc xxx  -o run `pkg-config --cflags --libs protobuf`
+
