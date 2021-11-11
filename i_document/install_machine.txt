@@ -1,12 +1,17 @@
 
+#git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git  #all versions
+#git reset v_5.15 --hard
 git clone https://github.com/torvalds/linux.git
+
 git clone https://github.com/tensorflow/tensorflow.git
 git clone https://github.com/grpc/grpc.git
+git clone https://github.com/protocolbuffers/protobuf.git
 
 apt install gcc
 apt install g++
 apt install -y  cmake
 apt install -y build-essential autoconf libtool pkg-config
+apt install -y libssl-dev
 
 apt install -y python3-pip
 pip3 install numpy

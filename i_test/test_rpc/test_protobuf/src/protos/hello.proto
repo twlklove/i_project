@@ -1,5 +1,5 @@
 syntax = "proto3";
-option cc_generic_services=true;
+option cc_generic_services=false;
 package hello; 
 message helloworld 
 { 
@@ -9,13 +9,15 @@ message helloworld
 }
 
 message MyRequest {
-    string text = 1;
-    int32 times = 2;
+    string id = 1;
+    string text = 2;
+    int32 times = 3;
 }
 
 message MyResponse {
-    string text = 1;
-    bool result = 2;
+    string id = 1;
+    string text = 2;
+    bool result = 3;
 }
 
 service MyService {
