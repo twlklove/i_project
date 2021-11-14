@@ -1,0 +1,1 @@
+make arch=aarch64

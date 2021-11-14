@@ -1,0 +1,10 @@
+
+download.sh : downlaod and install arm_gcc tool
+
+
+
+1. Arm Cortex-M/Cortex-R 平台，它使用的是 newlib 库: arm-eabi-gcc
+
+2. Arm Cortex-A 系列芯片, 使用的是 glibc 库。可以用来编译 u-boot、linux kernel 以及应用程序:
+    arm-linux-gnueabi-gcc : 32bit 
+    aarch64-linux-gnu-gcc : 64bit
