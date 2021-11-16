@@ -1,4 +1,4 @@
-install_cmd="apt-get install"
+install_cmd="apt-get install -y"
 ${install_cmd} make
 ${install_cmd} gcc
 ${install_cmd} g++
