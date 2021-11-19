@@ -609,15 +609,19 @@ void do_frame(int sock)
 	addrlen = sizeof(struct sockaddr);
 	bzero(frame_buf, sizeof(frame_buf));
 	recv_num = recvfrom(sock, frame_buf, sizeof(frame_buf), 0, &src_addr, &addrlen);
-
         int i = 0;	
+	
 	printf("recv is : ");
-	for (i = 0; i < recv_num; i++) {
+	for (i = 0; i < 12; i++) {//recv_num; i++) {
+	    //printf("%02x ", frame_buf[i] & 0xFF);
+#if 1
 	    if ((frame_buf[i] >= 0x20) &&(frame_buf[i] <= 0x7E)) {
 	        printf("%c", frame_buf[i]);
 	    }
+#endif		
 	}
 	printf("\n");
+	return;
 
 	global.packet_all++;
 	global.bytes += recv_num;
@@ -698,14 +702,14 @@ int main(int argc, const char *argv[])
 
 	signal(SIGINT, sig_int);
 
-	set_card_promisc("ens33", sock_fd);
+//	set_card_promisc("ens38", sock_fd);
 
 	int count = 1000;
 	while(count--) {
 		do_frame(sock_fd);
 	}
 
-	set_card_unpromisc("ens33", sock_fd);
+//	set_card_unpromisc("ens38", sock_fd);
 	close(sock_fd);
 
 	return 0;
