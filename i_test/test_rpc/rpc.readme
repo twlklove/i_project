@@ -28,7 +28,7 @@ local install :
     sudo apt install -y cmake
     mkdir -p cmake/build
     pushd cmake/build
-    cmake -DgRPC_INSTALL=ON       -DgRPC_BUILD_TESTS=OFF       -DCMAKE_INSTALL_PREFIX=$MY_INSTALL_DIR       ../..
+    cmake -DgRPC_INSTALL=ON   -DBUILD_SHARED_LIBS=ON  -DgRPC_BUILD_TESTS=OFF       -DCMAKE_INSTALL_PREFIX=$MY_INSTALL_DIR       ../..
     make -j
     make install
     popd
