@@ -7,8 +7,7 @@ include_directories(
     /root/.local/include
     /root/local/include)
 link_directories(
-    /root/.local/lib
-    ./build)
+    /root/.local/lib)
 
 set(LIBMYRPC_SRC ./src/rpc_meta.pb.cc)
 add_library(myrpc ${LIBMYRPC_SRC})
