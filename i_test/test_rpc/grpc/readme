@@ -1,0 +1,13 @@
+#git clone --recurse-submodules -b xx https://github.com/grpc/grpc.git  //--recurse-submodules 连子项目一起clone
+git clone https://github.com/grpc/grpc.git
+git submodule update --init # clone 子项目
+export MY_INSTALL_DIR=$HOME/.local
+mkdir -p $MY_INSTALL_DIR
+export PATH="$MY_INSTALL_DIR/bin:$PATH"
+sudo apt install -y cmake
+mkdir -p cmake/build
+pushd cmake/build
+cmake -DgRPC_INSTALL=ON   -DBUILD_SHARED_LIBS=ON  -DgRPC_BUILD_TESTS=OFF       -DCMAKE_INSTALL_PREFIX=$MY_INSTALL_DIR       ../..
+make -j
+make install
+popd
