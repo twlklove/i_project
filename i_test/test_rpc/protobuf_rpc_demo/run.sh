@@ -7,8 +7,9 @@ export PATH=$PATH:/root/.local/bin
 cd src
 protoc -I . --cpp_out=.  rpc_meta.proto 
 protoc -I . --cpp_out=.  echo.proto 
-cd -
 
+cd -
+rm -rf tmp
 mkdir tmp
 cd tmp
 cmake ../

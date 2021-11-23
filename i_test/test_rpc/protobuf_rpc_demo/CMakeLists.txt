@@ -11,7 +11,9 @@ link_directories(
 
 set(LIBMYRPC_SRC ./src/rpc_meta.pb.cc)
 add_library(myrpc ${LIBMYRPC_SRC})
+
 add_executable(server ./src/echo.pb.cc ./src/test_myrpc.cpp)
-target_link_libraries(server libprotobuf.a libboost_system.a myrpc pthread)
+target_link_libraries(server myrpc pthread protobuf) # libboost_system.so libprotobuf.a 
+
 add_executable(client ./src/echo.pb.cc ./src/test_myrpc_client.cpp)
-target_link_libraries(client libprotobuf.a libboost_system.a myrpc pthread)
+target_link_libraries(client myrpc pthread protobuf) #libboost_system.so libprotobuf.a 
