@@ -3,7 +3,7 @@
 
 /************ Service ******************/
 grpc/include/grpcpp/impl/codegen/client_unary_call.h
-grpc/third_party/protobuf/src/google/protobuf/service.h // Service RpcChannel
+grpc/third_party/protobuf/src/google/protobuf/service.h // Service RpcChannel RpcController
 
 
 /************ Channel ******************/
@@ -17,3 +17,5 @@ grpc/src/cpp/client/channel_cc.cc
 grpc/third_party/protobuf/src/google/protobuf/message.h // Message
 grpc/third_party/protobuf/src/google/protobuf/message_lite.cc
 
+/************ Descriptor ************** /
+grpc/third_party/protobuf/src/google/protobuf/descriptor.h //Descriptor ServiceDescriptor MethodDescriptor
