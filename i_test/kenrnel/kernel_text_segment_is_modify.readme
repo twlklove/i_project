@@ -1,0 +1,52 @@
+
+0. readelf -neSlh vmlinux_xxx
+        Section Headers : Flag : AX(allocation, execute) // section 
+        Program Headers ：Flag : RWE  //(mem protition) is important
+           LOAD xxxx // only load is usefull
+        Section to Segment // segment is used by ourself
+   objdump -DS  vmlinuz
+   
+1. arch/Kconfig: config STRICT_KERNEL_RWX
+2. init/main.c : set kernel mem protition readonly
+    static int __ref kernel_init(void *unused)
+    {
+        //...
+        mark_readonly();
+        //...
+    }
+    
+    #ifdef CONFIG_STRICT_KERNEL_RWX
+    static void mark_readonly(void)
+    {
+            if (rodata_enabled) { //hello : rodata is boot option,default is false;
+                    /*
+                     * load_module() results in W+X mappings, which are cleaned
+                     * up with call_rcu().  Let's make sure that queued work is
+                     * flushed so that we don't hit false positives looking for
+                     * insecure pages which are W+X.
+                     */
+                    rcu_barrier();
+                    mark_rodata_ro();
+                    rodata_test();
+            } else
+                    pr_info("Kernel memory protection disabled.\n");
+    }
+
+3. default kenerl mem protition
+static void __init map_kernel(pgd_t *pgdp)
+{
+        static struct vm_struct vmlinux_text, vmlinux_rodata, vmlinux_inittext,
+                                vmlinux_initdata, vmlinux_data;
+
+        pgprot_t text_prot = rodata_enabled ? PAGE_KERNEL_ROX : PAGE_KERNEL_EXEC;
+ 
+        map_kernel_segment(pgdp, _stext, _etext, text_prot, &vmlinux_text, 0,
+                           VM_NO_GUARD);
+        map_kernel_segment(pgdp, __start_rodata, __inittext_begin, PAGE_KERNEL,
+                           &vmlinux_rodata, NO_CONT_MAPPINGS, VM_NO_GUARD);
+        map_kernel_segment(pgdp, __inittext_begin, __inittext_end, text_prot,
+                           &vmlinux_inittext, 0, VM_NO_GUARD);
+        map_kernel_segment(pgdp, __initdata_begin, __initdata_end, PAGE_KERNEL,
+                           &vmlinux_initdata, 0, VM_NO_GUARD);
+}
+
