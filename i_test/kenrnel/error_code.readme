@@ -1,0 +1,9 @@
+Oops:
+    Documentation/translations/zh_CN/oops-tracing.txt
+    Documentation/admin-guide/README.rst
+    Documentation/admin-guide/bug-hunting.rst
+ 
+    scripts/decode_stacktrace.sh
+    ./include/uapi/asm-generic/errno-base.h 
+    ./include/uapi/asm-generic/errno.h 
+    ./include/linux/errno.h

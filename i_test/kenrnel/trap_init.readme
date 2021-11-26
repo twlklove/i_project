@@ -1,0 +1,43 @@
+
+1. init/main.c : trap_init
+    static int __ref kernel_init(void *unused)
+    {
+        //...
+        trap_init();
+        //...
+    }
+
+
+2. arch/arm64/kernel/traps.c:
+    void die(const char *str, struct pt_regs *regs, int err)
+    {
+            ret = __die(str, err, regs);
+    }
+    
+    
+    /*
+     * Page fault error code bits:
+     *
+     *   bit 0 ==    0: no page found       1: protection fault
+     *   bit 1 ==    0: read access         1: write access
+     *   bit 2 ==    0: kernel-mode access  1: user-mode access
+     *   bit 3 ==                           1: use of reserved bit detected
+     *   bit 4 ==                           1: fault was an instruction fetch
+     *   bit 5 ==                           1: protection keys block access
+     *   bit 15 ==                          1: SGX MMU page-fault
+     */
+
+    static int __die(const char *str, int err, struct pt_regs *regs)
+    {
+            pr_emerg("Internal error: %s: %x [#%d]" S_PREEMPT S_SMP "\n",  
+                     str, err, ++die_counter);
+    
+            print_modules();
+            show_regs(regs);
+            dump_kernel_instr(KERN_EMERG, regs);
+    }
+
+3. 
+./kernel/panic.c
+arch/arm64/mm/fault.c
+
