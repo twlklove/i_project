@@ -7,6 +7,11 @@
    objdump -DS  vmlinuz
    
 1. arch/Kconfig: config STRICT_KERNEL_RWX
+                 CONFIG_ARCH_HAS_STRICT_KERNEL_RWX=y
+                 CONFIG_STRICT_KERNEL_RWX=y
+                 CONFIG_ARCH_HAS_STRICT_MODULE_RWX=y
+                 CONFIG_STRICT_MODULE_RWX=y
+
 2. init/main.c : set kernel mem protition readonly
     static int __ref kernel_init(void *unused)
     {
