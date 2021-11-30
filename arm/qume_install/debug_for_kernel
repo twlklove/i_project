@@ -1,0 +1,4 @@
+aarch64-linux-gnu-gdb --tui linux-5.12.4/vmlinux
+
+input: target remote localhost:1234
+input: b start_kernel
