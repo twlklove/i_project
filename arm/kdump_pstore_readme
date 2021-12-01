@@ -1,0 +1,16 @@
+
+/*pstore kdump diskdump netdump */
+linux-5.12.4/fs/pstore/
+
+linux-5.12.4/Documentation/admin-guide/pstore-blk.rst
+linux-5.12.4/Documentation/admin-guide/kdump/kdump.rst
+linux-5.12.4/Documentation/admin-guide/ramoops.rst
+
+#1. config&enable
+linux-5.12.4/fs/pstore/Kconfig
+
+#2. mount
+mount -t pstore pstore /sys/fs/pstore
+
+3. test
+echo c > /proc/sysrq-trigger
