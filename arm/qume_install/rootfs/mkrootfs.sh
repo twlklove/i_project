@@ -29,7 +29,8 @@ cd -
 rm -rf install_arm64
 cp ${busy_box}/_install install_arm64 -a 
 ./create_lib.sh
-cp append_to_install/* install_arm64/ -rf
+ls append_to_install/ | grep -v bin | xargs -i -n 1 cp append_to_install/{} install_arm64/ -rf
+cp append_to_install/bin/* install_arm64/bin/ -rf
 
 rootfs_file=rootfs_ext4.img
 rm -rf ${root_file}
