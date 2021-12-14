@@ -3,3 +3,5 @@ https://github.com/vnpy/vnpy
 https://github.com/mementum/backtrader.git
 https://github.com/qmhedging/poboquant
 https://github.com/QUANTAXIS/QUANTAXIS
+
+https://www.zhihu.com/question/2087488 //very important
