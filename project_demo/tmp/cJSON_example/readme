@@ -1,0 +1,40 @@
+C语言函数库写JSON文件 ：
+　　从缓冲区中解析出JSON结构：extern cJSON *cJSON_Parse(const char *value);
+　　　　　　解析一块JSON数据返回cJSON结构， 在使用完之后调用cJSON_Delete函数释放json对象结构。
+
+　　将传入的JSON结构转化为字符串 ：extern char *cJSON_Print(cJSON *item);
+　　　　　　可用于输出到输出设备， 使用完之后free(char *) 。
+
+　　将JSON结构所占用的数据空间释放 ：void cJSON_Delete(cJSON *c)
+
+　　创建一个值类型的数据 ：extern cJSON *cJSON_CreateNumber(double num);
+　　　　　　　　　　　　　 extern cJSON *cJSON_CreateString(const char *string);
+　　　　　　　　　　　　　 extern cJSON *cJSON_CreateArray(void);
+
+　　创建一个对象（文档） ：extern cJSON *cJSON_CreateObject(void);
+
+　　数组创建以及添加 ：cJSON *cJSON_CreateIntArray(const int *numbers,int count);
+　　　　　　　　　　　 void cJSON_AddItemToArray(cJSON *array, cJSON *item);
+
+　　JSON嵌套 ：
+　　　　　　　　【 向对象中增加键值对】 cJSON_AddItemToObject(root, "rows", 值类型数据相关函数());
+　　　　　　　　【 向对象中增加数组】 cJSON_AddItemToObject(root, "rows", cJSON_CreateArray());
+　　　　　　　　【 向数组中增加对象】 cJSON_AddItemToArray(rows, cJSON_CreateObject());
+
+　　几个能提高操作效率的宏函数 ：#define cJSON_AddNumberToObject(object,name,n) \
+　　　　　　　　　　　　　　　　　　　　  cJSON_AddItemToObject(object, name,cJSON_CreateNumber(n))
+　　　　　　　　　　　　　　　　 #define cJSON_AddStringToObject(object,name,s)\
+　　　　　　　　　　　　　　　　　　　　  cJSON_AddItemToObject(object, name, cJSON_CreateString(s))
+
+C语言库函数解析JSON文件 ：
+
+　　　　根据键找json结点 ：extern cJSON *cJSON_GetObjectItem(cJSON *object,const char *string)
+
+　　　　判断是否有key是string的项 如果有返回1 否则返回0 ：extern int cJSON_HasObjectItem(cJSON *object,const char *string)
+　　　　　　　　　　　　　　　　　　　　　　{ return cJSON_GetObjectItem(object,string)?1:0; }
+
+　　　　返回数组结点array中成员的个数 ：extern int cJSON_GetArraySize(cJSON *array);
+
+　　　　根据数组下标index取array数组结点的第index个成员 返回该成员节点 ：extern cJSON *cJSON_GetArrayItem(cJSON *array,int index);
+
+　　　　遍历数组 ：#define cJSON_ArrayForEach(pos, head)        for(pos = (head)->child; pos != NULL; pos = pos->next)　　

@@ -1,0 +1,8 @@
+{
+    "company" : "tx",
+    "info" : [{
+        "name" : "jim",
+        "age" : 20,
+        "address" :"beijing"
+    }]
+}

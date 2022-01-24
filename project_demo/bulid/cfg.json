@@ -1,0 +1,9 @@
+{
+	"config": "i_config",
+	"log_cfg": [
+                   {
+			           "level"   : "debug",
+			           "dump_to" : 1 
+                   }
+               ]
+}
