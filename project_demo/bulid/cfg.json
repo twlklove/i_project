@@ -3,7 +3,7 @@
 	"log_cfg": [
                    {
 			           "level"   : "debug",
-			           "dump_to" : 1 
+			           "dump_to" : 3 
                    }
                ]
 }

@@ -3,7 +3,13 @@
 #include "types.h"
 #include "log.h"
 
-const u8 *levels[log_level_num] = {"fatal","err", "warn", "info", "debug"};
+const u8 *levels[log_level_num][2] = {
+	                                {"fatal", "\033[0;31m"},
+			                {"err",   "\033[1;31m"},
+				        {"warn",  "\033[1;33m"},
+					{"info",  ""},
+					{"debug"  "\033[1;34m"},
+				    };
 
 u32 cur_log_level = debug;
 u32 dump_to_file = 1; // 1:stdout, 2: log_file, 3 : stdout & log_file
@@ -29,7 +35,7 @@ void set_dump_level(const u8 *level_name)
 {                                                                                                                         
     int i = 0;                                                                                                            
     for (i = 0; i < log_level_num; i++) {                                                                                 
-        if (0 == strncmp(levels[i], level_name, strlen(level_name))) {
+        if (0 == strncmp(levels[i][0], level_name, strlen(level_name))) {
            break;                                                                                                         
         }                                                                                                                 
     }                                                                                                                     

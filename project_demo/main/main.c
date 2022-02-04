@@ -20,7 +20,7 @@ void test_random()
 void test_mem_leak()
 {
    u32 *p = (u32*)malloc(sizeof(int));
-   u32 *p1 = (u32 *)new(sizeof(int));
+   u32 *p1 = (u32 *)malloc(sizeof(int));
    *p1 = 20;
    *p = 10;
    DUMP(info, "%u, %u\n", (u32)sizeof(p), (u32)sizeof(*p));
@@ -41,13 +41,25 @@ void test_eth()
     DUMP(info, "%08x%04x, %04x%08x, %04x\n", eth_mac_0, (eth_mac_0_1 >> 16)&0xFFFF, (eth_mac_0_1)&0xFFFF, eth_mac_1, eth_type);
 }
 
+#include <sys/time.h>
 int main()
-{ 
+{    
     init();
     test_random();
     test_mem_leak();
     test_eth();
- 
+
+    struct timeval cur_time = {.tv_sec=0, .tv_usec=0};	
+
+    int ret = gettimeofday(&cur_time, NULL);
+    if (0 == ret){
+        DUMP(fatal, "%d, %ld\n", cur_time.tv_sec, cur_time.tv_usec/1000);
+	DUMP(err, "%d, %ld\n", cur_time.tv_sec, cur_time.tv_usec/1000);
+	DUMP(warn, "%d, %ld\n", cur_time.tv_sec, cur_time.tv_usec/1000);
+	DUMP(info, "%d, %ld\n", cur_time.tv_sec, cur_time.tv_usec/1000);
+	DUMP(debug, "%d, %ld\n", cur_time.tv_sec, cur_time.tv_usec/1000);
+    } 
+
     uninit();
     return 0;
 }
