@@ -7,7 +7,7 @@ check_usage()
     then
         if [ $1 == "-h" ]
         then
-            echo "\$1 is file name, \$2 is row, \$3 is column, \$4 is pattern \$5 is new content"
+            echo "\$1 is file name; \$2 is row,and 0 is all rows; \$3 is column; \$4 is pattern \$5 is new content"
         elif [ $1 == "-v" ]
         then
             echo "$version"
@@ -29,7 +29,7 @@ modify_content_on_row_column()
     column=$3
     src_content=$4
     dst_content=$5
-   
+
     if [ ! -f ${file_name} ]
     then
 	echo "file ${file_name} is not exist"
@@ -40,7 +40,7 @@ modify_content_on_row_column()
     dos2unix ${file_name}
 
     awk -F " " -v row_tmp=$row -v column_tmp=$column -v src=$src_content -v dst=$dst_content \
-	'{ if(($NR==$row_tmp)&&($column_tmp==src)){$column_tmp=dst} }1' ${file_name} > ${output_file_name}
+	    '{ if(((0==row_tmp)||(NR==row_tmp))&&($column_tmp==src)){$column_tmp=dst} }1' ${file_name} > ${output_file_name}
 }
 
 main()
