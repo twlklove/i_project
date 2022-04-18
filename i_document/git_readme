@@ -1,5 +1,8 @@
 #clone a git project
+#git clone --recurse-submodules -b xx https://github.com/grpc/grpc.git  //--recurse-submodules 连子项目一起clone
 git clone xxxxx
+git submodule update --init # clone 子项目
+
 
 # don't input passwd everytime
 git config --global credential.helper store  
