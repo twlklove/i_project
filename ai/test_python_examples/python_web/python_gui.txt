@@ -1,0 +1,42 @@
+1. Tkinter
+标准 Tk GUI 工具包的接口，可以在大多数的 Unix 平台下使用, 同样可以应用在 Windows 和 Mac 系统里。使用Tk8.0之后的版本
+优点：是python的内置库，无需额外下载，不存在兼容问题，且又非常详细的说明文档。Tkinter是内置的免费库
+缺点：实现效果较为普通
+https://docs.python.org/3/library/tk.html
+
+2. OpenGL
+主页链接：https://pypi.org/project/PyOpenGL/
+OpenGL 是 Open Graphics Library 的简写，意为“开放式图形库”，是用于渲染 2D、3D 矢量图形的跨语言、跨平台的应用程序编程接口（API）。
+优点：功能极为强大，几乎可以做出任何2D，3D图形。
+缺点：学习难度较高，适合具有刚需的同学
+
+3. Kivy ： Kivy是免费的库
+优点：Kivy 是一个开源的 Python 框架，用于快速开发应用，实现各种当前流行的用户界面，比如多点触摸等等。
+      Kivy 可以运行于 Windows， Linux， MacOS， Android， iOS 等当前绝大部分主流桌面/移动端操作系统。 
+      Kivy 基于 Python，界面文件和程序文件相互分离的设计思路，设计简洁优雅，语法易学，适合新人入门。
+      是一个开放源代码的Python库，用于创建新的用户界面和快速开发Web应用程序。
+缺点：缺点只有一个中文文档还是特别全面，大多数教程还是英文版本。
+https://github.com/topics/kivy-application
+https://cycleuser.gitbooks.io/kivy-guide-chinese/content/
+例子：
+pip install kivy
+from kivy.app import App
+from kivy.uix.button import Button
+
+class HelloWorldApp(App):
+   def build(self):
+       return Button(text="Hello Kivy World")
+
+HelloWorldApp().run()
+
+4. PyQT 5
+主页链接：https://docs.python.org/3/library/tk.html
+简介：PyQt是Qt框架的Python语言实现，由Riverbank Computing开发，是最强大的GUI库之一。
+PyQt提供了一个设计良好的窗口控件集合，每一个PyQt控件都对应一个Qt控件，
+优点：功能非常强大，可以用PyQt5开很漂亮的界面；另外它支持可视化界面设计，对新手非常友好。
+      PyQt5也是完全跨平台的。通过利用PyQt5的强大功能，开发人员可以为Windows、Mac、Linux、iOS、Android等平台构建应用程序。
+缺点：学习起来有一定难度 如果你的应用程序不是开源的，你必须支付一个商业许可
+pip install PyQt5
+
+5. PyGame
+主页链接：https://www.pygame.org/news
