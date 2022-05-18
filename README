@@ -1,1 +1,8 @@
 hexedit: 16 editor
+sourceinsight 破解:
+    0.select 30 days
+    1.修改sourceinsight4.exe
+    用16进制编辑器（sublime text）打开sourceinsight4.exe文件，找到c800 0000 742a 83bc 2408 这一段，修改74 为 eb。
+    2.修改license文件
+    打开 C:\ProgramData\Source Insight\4.0\si4.lic
+    将Expiration=”2017-XX-XX”中的2017修改为2030。
