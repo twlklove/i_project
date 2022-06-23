@@ -6,3 +6,6 @@ sourceinsight 破解:
     2.修改license文件
     打开 C:\ProgramData\Source Insight\4.0\si4.lic
     将Expiration=”2017-XX-XX”中的2017修改为2030。
+
+Rufus/Etcher:usb刻录工具
+Tiny core linux: 11MB的linux
