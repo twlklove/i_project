@@ -1,0 +1,4 @@
+addr2line -e /usr/lib/x86_64-linux-gnu/libc.so.6 0x1c000 -f -p -a -C
+objdump
+readelf
+nm  
