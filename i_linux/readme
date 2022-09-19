@@ -1,0 +1,8 @@
+systemctl status systemd-udevd
+
+systemd:
+    https://github.com/systemd/systemd
+systemd-udevd: 
+    /lib/udev/rules.d/
+    /etc/udev/rules.d/
+
