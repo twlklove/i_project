@@ -48,3 +48,10 @@ git remote set-url origin https://<your_token>@github.com/twlklove/i_project.git
 
 #usage
 #https://git-scm.com/book/zh/v2/Git-%E5%B7%A5%E5%85%B7-%E5%AD%90%E6%A8%A1%E5%9D%97
+#
+#
+
+git log --stat         #查看修改的文件
+git show "commit-d" --stat #查看修改的文件
+git log "commit-id" -p #查看修改的内容
+
