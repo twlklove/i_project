@@ -82,7 +82,9 @@ void open_server(int argc, char *argv[])
         exit(1);
     }
 
-    char buffer[BUFFER_SIZE];
+    char buffer[BUFFER_SIZE] = "hi:";
+    int fix_len = strlen(buffer);
+    char *p_buffer = &buffer[fix_len];
     struct sockaddr_in6 client_addr;
     socklen_t length = sizeof(client_addr);
  
@@ -115,15 +117,19 @@ void open_server(int argc, char *argv[])
                     continue;
                 }
                  
-                memset(buffer,0,sizeof(buffer));
-                int recv_len = recv(fd_tmp, buffer, sizeof(buffer),0);
-                if(strcmp(buffer,"exit\n")==0) {
+                memset(p_buffer,0,sizeof(buffer)-fix_len);
+                int recv_len = recv(fd_tmp, p_buffer, sizeof(buffer)-fix_len,0);
+                if(strcmp(p_buffer,"exit\n")==0) {
                     close(fd_tmp);
                     printf("exit\n");
                     continue;
                 }
-                fputs(buffer, stdout);
+		printf("recv msg : ");
+                fputs(p_buffer, stdout);
+	         	
+                send(fd_tmp, buffer, strlen(buffer)+1, 0);
 
+#if 0
                 ev.data.fd = fd_tmp;
                 //ev.data.ptr = buf;
                 ev.events = EPOLLOUT | EPOLLET;
@@ -131,7 +137,7 @@ void open_server(int argc, char *argv[])
                     printf("in err: epoll ctl\n");
                     close(fd_tmp);
                 }
-                printf("hello\n");
+#endif
             }
             else if (events[i].events & EPOLLOUT) {  //  has data to send
                 int fd_tmp = events[i].data.fd;
@@ -139,7 +145,7 @@ void open_server(int argc, char *argv[])
                     printf("fd is < 0\n");
                     continue;
                 }
-printf("hello123\n");                
+                
                 char *p_send = "hello, world\n";
                 send(fd_tmp, p_send, strlen(p_send), 0);
                 ev.data.fd = fd_tmp;

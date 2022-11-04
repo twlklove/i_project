@@ -38,6 +38,18 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    struct sockaddr_in local_addr = {0};
+    memset(&local_addr, 0, sizeof(local_addr));
+    local_addr.sin_family = AF_INET;
+    local_addr.sin_port = htons(0);
+    local_addr.sin_port = htonl(INADDR_ANY);
+    if (bind(fd, (struct sockaddr *)&local_addr, len) < 0)
+    {
+        perror("bind");
+        exit(1);
+    }
+
+    
     if (connect(fd, (struct sockaddr *)&ip_addr, len) < 0)
     {
         perror("connect");
@@ -77,10 +89,10 @@ int main(int argc, char *argv[])
     char recvbuf[BUFFER_SIZE];
     while (fgets(sendbuf, sizeof(sendbuf), stdin) != NULL)
     {
-        send(fd, sendbuf, strlen(sendbuf),0);
+        send(fd, sendbuf, strlen(sendbuf)+1,0);
         if(strcmp(sendbuf,"exit\n")==0)
             break;
-        recv(fd, recvbuf, sizeof(recvbuf),0);
+        recv(fd, recvbuf, sizeof(recvbuf)+1 ,0);
         fputs(recvbuf, stdout);
 
         memset(sendbuf, 0, sizeof(sendbuf));
