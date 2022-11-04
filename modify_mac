@@ -1,4 +1,0 @@
-
-ethtool -e  eth0 | grep 0x0010 | awk '{print "0x"$13$12$15$14}'   #获取魔数
-ethtool -E  eth0  magic <magic_val>  offset N  value  M           #修改网卡eeprom的指令格式，如mac地址，offset为0-5，数据宽度为8bit,需要逐个字节修改
-ethtool -e <eth_name> offset 0 length 6                           #查询mac地址
