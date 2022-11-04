@@ -1,0 +1,64 @@
+Unreal4（虚幻4）
+1) 数学基础
+下面这些数学基础书籍是为游戏开发量身定制的，比专门看某一数学方向更有效率：
+《3D Math Primer for Graphics and Game Development》，有中文版
+《Mathematics for 3D Game Programming and Computer Graphics》
+《Essential Mathematics Guide》
+《Geometric Tools for Computer Graphics》
+2) 图形库
+针对 OpengGL 的书籍：
+《OpenGL SuperBible》，著名的蓝宝书，以例子为主，有中文版。但不建议看中文版，翻译得不好。
+《OpenGL Programming Guide》，著名的红宝书，有中文版。红宝书更像是手册，API大全，例子较少，适合熟练者查询使用。
+《OpenGL 4.0 Shading Language Cookbook》，进阶，基本上就是API手册，有中文版。但不建议看中文版，翻译得不好。
+3) 计算机图形学
+《The Nature of Code》，有中文版，比较简单
+《Fundamentals of Computer Graphics》，被国外多所大学采用的入门教材，介绍范围比较广，从基本的相关数学到建模、渲染、动画、应用方面都有提及
+《Physically Based Rendering》，主要是离线渲染
+《Real-Time-Rendering》，必读经典！必读！
+《计算机图形学》，作者舍利
+《Computer Graphics》，要看最新的第三版
+《计算机图形学原理及实践：C语言描述》
+4) Shader着色器
+《Cg_tutorial》，入门
+《The Complete Effect and HLSL Guide》，入门
+《Shaders for Game Programmers and Artists》，含有大量入门例子
+《Advanced Lighting And Materials With Shaders》，介绍光照模型和技术
+《GPU Gems》进阶必读。
+《Shader X》系列，每年出版一本，包含最新的实时渲染技术。论文性的比较多，偏难。
+《Programming Vertex, Geometry, and Pixel Shaders》，以DirectX 10为主，很详细。
+5) 地形
+《Real Time 3D Terrain Engines Using C++ And DX9》非常全面的讨论了关于地形渲染的各种技术。
+
+6) 模型导入和动画
+《Character Animation With Direct3D》包含了最新的游戏动画技术
+《Computer Animation》
+《Real-Time Cameras》
+《Computer Facial Animation》
+《Realtime 3D Character Animation with Visual C++》
+《Advanced Animation and Rendering Techniques》
+《Cloth Modeling and Animation》
+7) 网络
+《TCP/IP 详解 卷2》
+《Advanced Programming in the UNIX Environment》
+《网络游戏核心技术与实战》
+8) 物理
+《Game Physics》
+《Game Physics Engine Development》
+《Real-time Collision Detection》，碰撞检测方面最好的书
+《3D Game Engine Design, 2nd》第8、9章值得一看
+9) 细节层次
+《Level of Detail for 3D Graphics》
+
+10) 光线跟踪
+《Physical-Based Rendering - From Theory to Implementation》
+《Another Introduction to Ray Tracing》
+11) 人工智能
+《Programming Game AI by Example》有中文版
+《Artificial Intelligence for Games》
+《AI Programming Wisdom》
+《AI Game Engine Programming》
+12) 综合
+《Game Programming Gems》，文章的范围比较广，选择性阅读
+《Color and Light in Nature》
+《Digital Design of Nature》
+《Form+Code in Design, Art, and Architecture》
