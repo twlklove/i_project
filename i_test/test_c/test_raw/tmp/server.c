@@ -18,15 +18,23 @@
 #define dump printf
 #define dump_data(p_data, len) \
 ({\
-    int i =0;\
-    for(i = 0; i < len; i++) { \
-        if ((0 != i) && (0 == i % 16)) {\
-	    dump("\n");\
-	}\
-        dump("%02x ", p_data[i]&0xFF);\
-    }\
-    dump("\n");\
+    int i =0;                                                    \
+    for(i = 0; i < len; i++) {                                   \
+        if ((0 != i) && (0 == i % 16)) {                         \
+	    dump("\n");                                          \
+	}                                                        \
+	                                                         \
+	if (i + 1 < len) {                                       \
+            dump("%02x%02x ", p_data[i]&0xFF, p_data[i+1]&0xFF); \
+	    i++;                                                 \
+	}                                                        \
+	else {                                                   \
+            dump("%02x", p_data[i]&0xFF);                        \
+        }                                                        \
+    }                                                            \
+    dump("\n");                                                  \
 })
+
 
 int main(int argc, char **argv) {
 	int sock, n;
