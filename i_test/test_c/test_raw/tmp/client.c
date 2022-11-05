@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 	};	
 
 	struct ifreq req;					//网络接口地址	
-	strncpy(req.ifr_name, "ens39", IFNAMSIZ);			//指定网卡名称
+	strncpy(req.ifr_name, "ens33", IFNAMSIZ);			//指定网卡名称
 	if(-1 == ioctl(sock_raw_fd, SIOCGIFINDEX, &req))	//获取网络接口
 	{
 		perror("ioctl");
@@ -62,6 +62,7 @@ int main(int argc, char *argv[])
 		char data[1024]={0};
                 memcpy(data,sendbuffer+14,num);
 		printf("recv data is : %s\n",data);
+		sleep(3);
 	}
 	return 0;
 }

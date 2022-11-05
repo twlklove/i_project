@@ -14,6 +14,20 @@
 #include<netinet/ether.h>
 #include<net/if.h>
 #include<string.h>
+
+#define dump printf
+#define dump_data(p_data, len) \
+({\
+    int i =0;\
+    for(i = 0; i < len; i++) { \
+        if ((0 != i) && (0 == i % 16)) {\
+	    dump("\n");\
+	}\
+        dump("%02x ", p_data[i]&0xFF);\
+    }\
+    dump("\n");\
+})
+
 int main(int argc, char **argv) {
 	int sock, n;
 	char buffer[1024] = {0};
@@ -32,7 +46,7 @@ int main(int argc, char **argv) {
 	socklen_t addr_length = sizeof(struct sockaddr_ll);
 	struct sockaddr_ll sll;					//原始套接字地址结构
 	struct ifreq req;					//网络接口地址	
-	strncpy(req.ifr_name, "ens38", IFNAMSIZ);			//指定网卡名称
+	strncpy(req.ifr_name, "ens33", IFNAMSIZ);			//指定网卡名称
 	if(-1 == ioctl(sock, SIOCGIFINDEX, &req))	//获取网络接口
 	{
 		perror("ioctl");
@@ -48,22 +62,22 @@ int main(int argc, char **argv) {
 		usleep(1000);
 		n = recvfrom(sock, buffer,1024,0, (struct sockaddr *)&client, &addr_length);
 		if (n < 14) {
-			continue;
+		    continue;
 		}
+
+		printf("recv data is :\n");
+                dump_data(buffer, n);
+
 		int num = n-14;
 		memcpy(sendbuffer, buffer, n);
 		char data[1024] = {0};
-                memcpy(data,sendbuffer+14,num);
-		
-                if(strcmp(data,"test")==0)
-                {
-			printf("recv data is : %s\n",data);	
-			int len = sprintf(send_msg+14, "%s", "hello, world");
-			len = sendto(sock, send_msg, 14+len, 0 , (struct sockaddr *)&sll, sizeof(sll));
-			if(len == -1)
-			{
-			    perror("sendto");
-			}	
-                }	
+                memcpy(data,sendbuffer+14,num);	
+			
+		int len = sprintf(send_msg+14, "%s", "hello, world");
+		len = sendto(sock, send_msg, 14+len, 0 , (struct sockaddr *)&sll, sizeof(sll));
+		if(len == -1)
+		{
+		    perror("sendto");
+		}	
 	}
 }
