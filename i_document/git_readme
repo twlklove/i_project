@@ -18,6 +18,7 @@ git branch -D i_branch_1
 
 # update or download files
 git update
+git pull
 git checkout .
 
 # upload
@@ -51,8 +52,9 @@ git remote set-url origin https://<your_token>@github.com/twlklove/i_project.git
 #
 #
 
+git diff --stat        #查看本地修改的文件
 git log --stat         #查看修改的文件
-git show "commit-d" --stat #查看修改的文件
+git show "commit-id" --stat #查看修改的文件
 git log "commit-id" -p #查看修改的内容
 git log "commit-id" -p xx.cpp #查看指定文件的修改内容
 
