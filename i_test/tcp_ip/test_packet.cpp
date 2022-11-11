@@ -114,7 +114,7 @@ typedef enum {
 
     PROTO_OTHER_MSG     =   0x0400000b, 
 }msg_type;
-const char *msg_infos[] = {"pacekt", "arp", "arp req", "arp reply", "udp", "broadcast", 
+const char *msg_infos[] = {"all packet", "arp", "arp req", "arp reply", "udp", "broadcast", 
 	                   "dhcp", "dhcp req", "dhcp resp", "udp_normal", "tcp", "other_msg"};
 
 typedef struct {
@@ -326,6 +326,28 @@ const u32 proto_info_mask  = 0x0000FFFF;
 u32 cfg_proto_id = 0; 
 u32 cfg_sub_proto_id = 0;
 
+u8 is_cfg_proto_msg(msg_info *p_msg_info)
+{
+    u8 ret = 0;
+    if (NULL == p_msg_info) {
+	dump("null pointer\n");
+        return 0;
+    }
+    
+    u32 cur_proto_id = (p_msg_info->msg_type_id) & proto_mask;
+    u32 cur_sub_proto_id = (p_msg_info->msg_type_id) & sub_proto_mask;
+    u16 cur_proto_info_index = (p_msg_info->msg_type_id) & proto_info_mask;
+     
+    if ((0 == cfg_proto_id)
+        || ((cfg_proto_id == cur_proto_id) 
+           && ((0 == cfg_sub_proto_id) || (cfg_sub_proto_id == cur_sub_proto_id)))) {
+	dump("msg type is %s\n", msg_infos[cur_proto_info_index]);
+        ret = 1;
+    }
+
+    return ret;
+}
+
 void *recv_thread(void *p_args)
 {
     s32 ret = 0;
@@ -413,18 +435,9 @@ void *recv_thread(void *p_args)
  
 		    memset(&msg_info_tmp, 0, sizeof(msg_info_tmp));
 		    parse_data(buf, len, &msg_info_tmp);
-
-		    cur_proto_id = (msg_info_tmp.msg_type_id) & proto_mask;
-		    cur_sub_proto_id = (msg_info_tmp.msg_type_id) & sub_proto_mask;
-		    cur_proto_info_index = (msg_info_tmp.msg_type_id) & proto_info_mask;
-		     
-		    if ((0 == cfg_proto_id)
-		        || ((cfg_proto_id == cur_proto_id) 
-		           && ((0 == cfg_sub_proto_id) || (cfg_sub_proto_id == cur_sub_proto_id)))) {
-			if(dump_count++ < cfg_dump_count){
-			    dump("msg type is %s\n", msg_infos[cur_proto_info_index]);
-			    dump_data(buf, len);
-			}
+                    if ((1 == is_cfg_proto_msg(&msg_info_tmp)) && (dump_count < cfg_dump_count)) {	
+			dump_data(buf, len);
+			dump_count++;
 		    }
 	        }
 	    }

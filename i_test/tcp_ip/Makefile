@@ -1,4 +1,4 @@
-target=run
+target=packet_dump
 
 all:$(target)
 $(target):
