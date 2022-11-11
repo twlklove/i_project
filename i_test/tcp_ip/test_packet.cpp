@@ -63,7 +63,7 @@ typedef long long              s64;
 #define dump(a, ...)                printf("%s[%d] mark: " a, __FILE__, __LINE__, ##__VA_ARGS__)
 #endif
 
-#define DEFAULT_DUMP_LEN   80
+#define DEFAULT_DUMP_LEN   60
 #define DEBUG 0
 
 #if DEBUG
