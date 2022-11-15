@@ -6,7 +6,9 @@
 #define _LINUX_CRC32_H
 
 #include <linux/types.h>
-#include <linux/bitrev.h>
+//#include <bitrev.h>
+//#include "bitrev.h"
+#include "i_types.h"
 
 u32 __pure crc32_le(u32 crc, unsigned char const *p, size_t len);
 u32 __pure crc32_be(u32 crc, unsigned char const *p, size_t len);

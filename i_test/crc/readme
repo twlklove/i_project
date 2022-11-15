@@ -1,0 +1,51 @@
+crc32: crc32ctable
+crc:
+
+是模-2除法的余数，采用的除数不同，CRC的类型也就不一样。
+通常，CRC的除数用生成多项式来表示。最常用的CRC码及生成多项式名称生成多项式
+init : 初始值,一般为0
+poly:多项式值，不包含最高位的1
+xorout: 输出异或值
+refin: 原始数据计算前是否翻转
+refout: 结果是否翻转
+
+CRC-4                                                                                       width    poly    init         xorout    refin  refout
+x^4 + x + 1                                                                                  4       0x03     0            0        true   true
+
+CRC-7
+X^7 + x^3 +1                                                                                 7       0x09     0            0        false  false
+
+CRC-8
+x^8 + x^2 + x + 1                                                                            8       0x07     0            0        false  false
+
+CRC-8/MAXIM
+x^8 + x^5 + x4 + 1                                                                           8       0x31     0            0         true  true
+
+CRC-12
+x^12 + x^11 + x^3 + x^2 + x + 1
+
+CRC-16
+x^16 + x^15 + x^2 + 1
+
+CRC16/CCITT
+x^16 + x^12 + x^5 + 1                                                                       16      0x1021    0            0        true   true
+
+CRC-32
+x^32 + x^26 +x^23 + x^22 + x^16 + x^12 +x^11 + x^10 + x^8 + x^7 + x^5 + x^4 + x^2 + x + 1   32     0x04c11db7 0xFFFFFFFF 0xFFFFFFFF true  true
+
+举例：
+根据CRC参数模型表，得到CRC-8/MAXIN的参数如下：
+POLY = 0x31 = 0011 0001(最高位1已经省略), INIT = 0x00, XOROUT = 0x00, REFIN = TRUE, REFOUT = TRUE
+
+计算原始数据0x34，使用CRC-8/MAXIN参数模型，求CRC值:
+0.原始数据 = 0x34 = 0011 0100，多项式 = 0x31 = 1 0011 0001
+1.INIT = 00，原始数据高8位和初始值进行异或运算保持不变。
+2.REFIN为TRUE，需要先对原始数据进行翻转：0011 0100 > 0010 1100
+3.原始数据左移8位，即后面补8个0：0010 1100 0000 0000
+4.把处理之后的数据和多项式进行模2除法，求得余数：
+原始数据：0010 1100 0000 0000 = 10 1100 0000 0000
+多项式：1 0011 0001
+模2除法取余数低8位：1111 1011
+5.与XOROUT进行异或，1111 1011 xor 0000 0000 = 1111 1011 
+6.因为REFOUT为TRUE，对结果进行翻转得到最终的CRC-8值：1101 1111 = 0xDF
+
