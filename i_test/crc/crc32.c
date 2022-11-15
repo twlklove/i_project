@@ -26,11 +26,10 @@
 
 /* see: Documentation/staging/crc32.rst for a description of algorithms */
 
-#include <linux/crc32.h>
-#include <linux/crc32poly.h>
-#include <linux/module.h>
 #include <linux/types.h>
-#include <linux/sched.h>
+#include "i_types.h"
+#include "include/crc32.h"
+#include "include/crc32poly.h"
 #include "crc32defs.h"
 
 #if CRC_LE_BITS > 8
@@ -46,10 +45,6 @@
 #endif
 
 #include "crc32table.h"
-
-MODULE_AUTHOR("Matt Domsch <Matt_Domsch@dell.com>");
-MODULE_DESCRIPTION("Various CRC32 calculations");
-MODULE_LICENSE("GPL");
 
 #if CRC_LE_BITS > 8 || CRC_BE_BITS > 8
 
@@ -201,8 +196,6 @@ u32 __pure __weak __crc32c_le(u32 crc, unsigned char const *p, size_t len)
 	return crc32_le_generic(crc, p, len, crc32ctable_le, CRC32C_POLY_LE);
 }
 #endif
-EXPORT_SYMBOL(crc32_le);
-EXPORT_SYMBOL(__crc32c_le);
 
 u32 __pure crc32_le_base(u32, unsigned char const *, size_t) __alias(crc32_le);
 u32 __pure __crc32c_le_base(u32, unsigned char const *, size_t) __alias(__crc32c_le);
@@ -278,8 +271,6 @@ u32 __attribute_const__ __crc32c_le_shift(u32 crc, size_t len)
 {
 	return crc32_generic_shift(crc, len, CRC32C_POLY_LE);
 }
-EXPORT_SYMBOL(crc32_le_shift);
-EXPORT_SYMBOL(__crc32c_le_shift);
 
 /**
  * crc32_be_generic() - Calculate bitwise big-endian Ethernet AUTODIN II CRC32
@@ -341,4 +332,3 @@ u32 __pure __weak crc32_be(u32 crc, unsigned char const *p, size_t len)
 	return crc32_be_generic(crc, p, len, crc32table_be, CRC32_POLY_BE);
 }
 #endif
-EXPORT_SYMBOL(crc32_be);

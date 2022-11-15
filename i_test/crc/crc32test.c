@@ -24,11 +24,12 @@
  * Version 2.  See the file COPYING for more details.
  */
 
-#include <linux/crc32.h>
-#include <linux/module.h>
-#include <linux/sched.h>
-
+//#include <linux/module.h>
+//#include <linux/sched.h>
+#include <linux/types.h>
+#include "crc32.h"
 #include "crc32defs.h"
+#include "i_types.h"
 
 /* 4096 random bytes */
 static u8 const __aligned(8) test_buf[] __initconst =
@@ -659,7 +660,9 @@ static struct crc_test {
 	{0xb18a0319, 0x00000026, 0x000007db, 0x1cf98dcc, 0x8fa9ad6a, 0x9dc0bb48},
 };
 
+#ifdef USE_KERNEL
 #include <linux/time.h>
+#endif
 
 static int __init crc32c_test(void)
 {
@@ -683,16 +686,18 @@ static int __init crc32c_test(void)
 
 	/* reduce OS noise */
 	local_irq_save(flags);
-
 	nsec = ktime_get_ns();
+
 	for (i = 0; i < 100; i++) {
 		if (test[i].crc32c_le != __crc32c_le(test[i].crc, test_buf +
 		    test[i].start, test[i].length))
 			errors++;
 	}
+
 	nsec = ktime_get_ns() - nsec;
 
 	local_irq_restore(flags);
+
 
 	pr_info("crc32c: CRC_LE_BITS = %d\n", CRC_LE_BITS);
 
@@ -840,6 +845,7 @@ static int __init crc32test_init(void)
 	return 0;
 }
 
+#ifdef USE_KERNEL
 static void __exit crc32_exit(void)
 {
 }
@@ -850,3 +856,10 @@ module_exit(crc32_exit);
 MODULE_AUTHOR("Matt Domsch <Matt_Domsch@dell.com>");
 MODULE_DESCRIPTION("CRC32 selftest");
 MODULE_LICENSE("GPL");
+#else
+int main(int argc, char *argv)
+{
+    crc32test_init();
+    return 0;
+}
+#endif
