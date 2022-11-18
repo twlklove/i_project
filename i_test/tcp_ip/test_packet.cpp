@@ -375,7 +375,9 @@ u8 is_cfg_dump_proto_msg(msg_info *p_msg_info)
     u32 cur_proto_id = (p_msg_info->msg_type_id) & proto_mask;
     u32 cur_sub_proto_id = (p_msg_info->msg_type_id) & sub_proto_mask;
     u16 cur_proto_info_index = (p_msg_info->msg_type_id) & proto_info_mask;
-     
+   
+    dump_debug("cfg prot id is %08x, cfg sub proto id is %08x, cur proto id is %08x, cur sub proto id is %08x\n", 
+		                        cfg_dump_proto_id, cfg_dump_sub_proto_id, cur_proto_id, cur_sub_proto_id);  
     if ((0 == cfg_dump_proto_id)
         || ((cfg_dump_proto_id == cur_proto_id) 
            && ((0 == cfg_dump_sub_proto_id) || (cfg_dump_sub_proto_id == cur_sub_proto_id)))) {
@@ -528,7 +530,7 @@ void *recv_thread(void *p_args)
 		    if (PROTO_TCP == msg_info_tmp.msg_type_id) {
 		        ret = verify_checksum(buf, len);
 		        if (ret != 0) {
-                            //continue;
+                            continue;
 		        }
                     }
 
@@ -570,7 +572,7 @@ void signal_handler( int signum )
 
 void help()
 {
-    dump("help\n");
+    dump("for example: ./packet_dump -t -c 2\n");
 }
 
 s32 parse_args(s32 argc, char *argv[])
@@ -599,7 +601,6 @@ s32 parse_args(s32 argc, char *argv[])
 		cfg_p_eth_name = optarg;          // optarg is argv[optind-1]
                 break;
 	    case 'a':
-		dump_debug("%s\n", argv[optind-1]);
                 cfg_dump_proto = PROTO_ARP;
                 break;
             case 'b':
@@ -643,8 +644,9 @@ s32 parse_args(s32 argc, char *argv[])
 	ret = -1;
     }
     else {
+	dump_debug("cfg proto is %08x\n", cfg_dump_proto);
         cfg_dump_proto_id = cfg_dump_proto & proto_mask;
-        cfg_dump_sub_proto_id == cfg_dump_proto & sub_proto_mask;
+        cfg_dump_sub_proto_id = cfg_dump_proto & sub_proto_mask;
     }
 
     return ret;
