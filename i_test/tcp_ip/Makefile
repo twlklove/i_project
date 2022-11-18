@@ -1,8 +1,10 @@
 target=packet_dump
 
-all:$(target)
+CFLAGS += 
+
+all:clean $(target)
 $(target):
-	g++ test_packet.cpp -lpthread -o $@
+	g++ -I . $(CFLAGS) test_packet.cpp checksum.c -lpthread -o $@
 
 .PHONY:clean
 clean:
