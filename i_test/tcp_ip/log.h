@@ -9,7 +9,7 @@
 #endif
 
 #define DEFAULT_DUMP_LEN   60
-#define DEBUG 0
+#define DEBUG 1
 
 #if DEBUG
 #undef  dump_debug 

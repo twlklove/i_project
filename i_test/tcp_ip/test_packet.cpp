@@ -196,18 +196,18 @@ u32 verify_tcp_checksum(u8 *p_data, u16 data_len)
     u32 ret = 0;
     frame_header_no_hdr_extend *p_head = (frame_header_no_hdr_extend*)p_data;  
     u32 tcp_len = ntohs(p_head->ip_tot_len) - p_head->ip_hdr_len * 4;
-    dump_debug("src port is %04x, dst port is %04x, ip len is %d, tcp len is %d\n", 
+    dump("src port is %04x, dst port is %04x, ip len is %d, tcp len is %d\n", 
 	       ntohs(p_head->tcp_src_port), ntohs(p_head->tcp_dst_port), ntohs(p_head->ip_tot_len), tcp_len);
  
     // tcp_check = tcp_head_check + tcp_payload_check + 12B_tcp_fake_header_check 
     struct tcphdr *p_tcph = (struct tcphdr*)(&(p_head->tcp_hdr));
     u16 src_check = p_head->tcp_check;
     p_head->tcp_check = 0;
-    u32 csum = 0;
-    csum = csum_partial(p_tcph, tcp_len, csum);
+    u16 csum = 0;
+    //csum = csum_partial(p_tcph, tcp_len, csum);
 
     // 12B tcp_fake_header_check : src_ip, dst_ip, proto, reserved, tcp_len(tcp_header + tcp_payload)
-    csum = tcp_v4_check(tcp_len, p_head->ip_saddr, p_head->ip_daddr, csum);
+    csum = ~tcp_v4_check(tcp_len, p_head->ip_saddr, p_head->ip_daddr, csum);
     if (csum != src_check) {
         ret = 1;
 	dump("error: tcp calc checksum is %04x, src checksum is %04x\n", ntohs(csum), ntohs(src_check)); 
@@ -363,6 +363,7 @@ const u32 sub_proto_mask = 0x00FF0000;
 const u32 proto_info_mask  = 0x0000FFFF;
 u32 cfg_dump_proto_id = 0; 
 u32 cfg_dump_sub_proto_id = 0;
+u32 cfg_ignore_outgoing = 0;
 
 u8 is_cfg_dump_proto_msg(msg_info *p_msg_info)
 {
@@ -398,16 +399,18 @@ s32 set_socket_packet(u32 domain, u32 type, u32 fd)
     do {
         if (SOCK_PACKET != type) {
             u32 opt_value = 1;
-            ret = setsockopt(fd, SOL_PACKET, PACKET_IGNORE_OUTGOING, (u8*)&opt_value, sizeof(opt_value));
-            if (0 != ret) {
-                dump("fail to set sock, err is : %s\n", strerror(errno));
-                break;
-            }	
-            
+	    if (1 == cfg_ignore_outgoing) {
+                ret = setsockopt(fd, SOL_PACKET, PACKET_IGNORE_OUTGOING, (u8*)&opt_value, sizeof(opt_value));
+                if (0 != ret) {
+                    dump("fail to set sock, err is : %s\n", strerror(errno));
+                    break;
+                }	
+            } 
+
             struct ifreq ifr;
             bzero(&ifr, sizeof(ifr)); 
             strncpy(ifr.ifr_name, cfg_p_eth_name, sizeof(cfg_p_eth_name) - 1);	
-            ret = ioctl(fd, SIOCGIFINDEX, &ifr);
+            ret = ioctl(fd, SIOCGIFINDEX, &ifr);   //SIOCSIFFLAGS, SIOCGIFADDR, SIOCGIFHWADDR, SIOCGIFTXQLEN, in net/core/dev_ioctl.c
             if (0 != ret) {
                 dump("fail to get eth index, err is : %s\n", strerror(errno));
                 break;
@@ -530,7 +533,7 @@ void *recv_thread(void *p_args)
 		    if (PROTO_TCP == msg_info_tmp.msg_type_id) {
 		        ret = verify_checksum(buf, len);
 		        if (ret != 0) {
-                            continue;
+                            //continue;
 		        }
                     }
 
@@ -578,7 +581,7 @@ void help()
 s32 parse_args(s32 argc, char *argv[])
 {
     s32 ret = 0;
-    char *short_opts = (char*)"i:abudtc:s::h";
+    char *short_opts = (char*)"i:abudtc:s::hR";
     struct option long_opts[] = {
 	{"eth",        required_argument, NULL, 'i'},
         {"arp",        no_argument,       NULL, 'a'},
@@ -588,6 +591,7 @@ s32 parse_args(s32 argc, char *argv[])
         {"tcp",        no_argument,       NULL, 't'},
 	{"count",      required_argument, NULL, 'c'},
 	{"dump_len",   optional_argument, NULL, 's'},
+        {"recv",       optional_argument, NULL, 'R'},
 	{"help",       no_argument,       NULL, 'h'},
         {0, 0, 0, 0},
     };
@@ -631,7 +635,9 @@ s32 parse_args(s32 argc, char *argv[])
 	    case 'h':
 		help();
                 exit(0);
-
+	    case 'R':
+		cfg_ignore_outgoing = 1;
+                break;
 	    default:
 		help();
 		ret = -1;
