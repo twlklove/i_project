@@ -31,7 +31,7 @@
 // ether
 #include <netinet/ether.h>      //ETHERTYPE_IP
 #include <net/ethernet.h>
-#include <net/if.h>
+#include <net/if.h>   //ifreq
 
 #include <iostream>
 #include <cstring>
@@ -186,6 +186,22 @@ typedef struct
 }__attribute__((packed)) frame_header_no_hdr_extend;
 //#paragma pack()
 
+
+u32 recv_thread_running = 1;
+u32 eth_ip = 0;
+
+s8 *cfg_p_eth_name = ETH;
+msg_type cfg_dump_proto = PROTO_PACKET;
+u32 cfg_dump_count = 0xFFFFFFFF;
+u32 cfg_dump_len = DEFAULT_DUMP_LEN;
+const u32 proto_mask = 0xFF000000;
+const u32 sub_proto_mask = 0x00FF0000;
+const u32 proto_info_mask  = 0x0000FFFF;
+u32 cfg_dump_proto_id = 0; 
+u32 cfg_dump_sub_proto_id = 0;
+u32 cfg_ignore_outgoing = 0;
+
+
 u16 tcp_v4_check(u32 len, u32 saddr, u32 daddr, u32 csum)
 {
     return csum_tcpudp_magic(saddr, daddr, len, IPPROTO_TCP, csum);
@@ -199,15 +215,24 @@ u32 verify_tcp_checksum(u8 *p_data, u16 data_len)
     dump("src port is %04x, dst port is %04x, ip len is %d, tcp len is %d\n", 
 	       ntohs(p_head->tcp_src_port), ntohs(p_head->tcp_dst_port), ntohs(p_head->ip_tot_len), tcp_len);
  
-    // tcp_check = tcp_head_check + tcp_payload_check + 12B_tcp_fake_header_check 
+    //for send packet, csum is not finally csum, here is csum = ~tcp_v4_check(tcp_len, p_head->ip_saddr, p_head->ip_daddr, csum), so dont't check here
+    if (eth_ip == ntohl(p_head->ip_saddr)) { 
+	dump("==>[T]\n");
+        return 0;
+    }
+
+    dump("==>[R]\n");
+
     struct tcphdr *p_tcph = (struct tcphdr*)(&(p_head->tcp_hdr));
     u16 src_check = p_head->tcp_check;
     p_head->tcp_check = 0;
     u16 csum = 0;
-    //csum = csum_partial(p_tcph, tcp_len, csum);
+
+    // tcp_check = tcp_head_check + tcp_payload_check + 12B_tcp_fake_header_check  
+    csum = csum_partial(p_tcph, tcp_len, csum);
 
     // 12B tcp_fake_header_check : src_ip, dst_ip, proto, reserved, tcp_len(tcp_header + tcp_payload)
-    csum = ~tcp_v4_check(tcp_len, p_head->ip_saddr, p_head->ip_daddr, csum);
+    csum = tcp_v4_check(tcp_len, p_head->ip_saddr, p_head->ip_daddr, csum);
     if (csum != src_check) {
         ret = 1;
 	dump("error: tcp calc checksum is %04x, src checksum is %04x\n", ntohs(csum), ntohs(src_check)); 
@@ -352,19 +377,6 @@ void parse_data(u8 *p_data, u32 data_len, msg_info *p_msg_info)
     } 
 }
 
-u32 recv_thread_running = 1;
-
-s8 *cfg_p_eth_name = ETH;
-msg_type cfg_dump_proto = PROTO_PACKET;
-u32 cfg_dump_count = 0xFFFFFFFF;
-u32 cfg_dump_len = DEFAULT_DUMP_LEN;
-const u32 proto_mask = 0xFF000000;
-const u32 sub_proto_mask = 0x00FF0000;
-const u32 proto_info_mask  = 0x0000FFFF;
-u32 cfg_dump_proto_id = 0; 
-u32 cfg_dump_sub_proto_id = 0;
-u32 cfg_ignore_outgoing = 0;
-
 u8 is_cfg_dump_proto_msg(msg_info *p_msg_info)
 {
     u8 ret = 0;
@@ -442,6 +454,23 @@ s32 set_socket_packet(u32 domain, u32 type, u32 fd)
     return ret;
 }
 
+u32 get_ipv4(u32 fd)
+{
+    u32 ip = 0;
+    struct ifreq ifr;
+    bzero(&ifr, sizeof(ifr)); 
+    strncpy(ifr.ifr_name, cfg_p_eth_name, sizeof(cfg_p_eth_name) - 1);	
+    s32 ret = ioctl(fd, SIOCGIFADDR, &ifr);   //SIOCSIFFLAGS, SIOCGIFADDR, SIOCGIFHWADDR, SIOCGIFTXQLEN, in net/core/dev_ioctl.c
+    if (0 == ret) {
+        ip = ntohl((*((struct sockaddr_in*)(&ifr.ifr_addr))).sin_addr.s_addr);
+    }
+    else {
+        dump("fail to get eth ip, err is : %s\n", strerror(errno));
+    }
+
+    return ip;
+}
+
 void *recv_thread(void *p_args)
 {
     s32 ret = 0;
@@ -466,7 +495,14 @@ void *recv_thread(void *p_args)
                 break;
 	    }
 	}
-	
+
+        u32 ip = get_ipv4(fd);
+        if (0 == ip) {
+	    dump("ip is %d\n", ip);
+	    break;
+	}	
+        eth_ip = ip;
+
         ret = modify_eth_flag(fd, cfg_p_eth_name, OPEN_ETH_FLAG, IFF_PROMISC);
 	if (0 != ret) {
             dump("fail to open promisc\n");
