@@ -1,32 +1,53 @@
-#clone a git project
-#git clone --recurse-submodules -b xx https://github.com/grpc/grpc.git  //--recurse-submodules 连子项目一起clone
-git clone xxxxx
-git submodule update --init # clone 子项目
+
+0. clone a git project
+    #git clone --recurse-submodules -b xx https://github.com/grpc/grpc.git  //--recurse-submodules 连子项目一起clone
+    git clone xxxxx
+    git submodule update --init # clone 子项目
+    
+    # don't input passwd everytime
+    git config --global credential.helper store  
+    
+    # lookup branch and addr
+    git remote -v
+    git branch 
+    
+    # creat branch, switch branch or del branch
+    git checkout -B i_branch_1 
+    git checkout i_branch_1
+    git branch -D i_branch_1
+
+1. # download files or update 
+    1.1 git pull origin <远程分支名>:<本地分支名>     //将远程指定分支 拉取到 本地指定分支上
+    1.2 git pull origin <远程分支名>                  //将远程指定分支 拉取到 本地当前分支上
+    
+    1.3 git push --set-upstream origin <本地分支名>   // 将本地分支与远程同名分支相关联 // 简写方式：git push -u origin <本地分支名>  
+        git pull                                      //将与本地当前分支同名的远程分支 拉取到 本地当前分支上
+    
+    1.4
+        git update
+        git checkout .
+
+2. push操作
+   # upload
+       git add xxx
+       git commit -m "xx"
+   2.1 git push origin <本地分支名>:<远程分支名>    //将本地当前分支 推送到 远程指定分支上
+   2.2 git push origin <本地分支名>                 //将本地当前分支 推送到 与本地当前分支同名的远程分支上
+   
+   2.3 2.3.1 git push --set-upstream origin <本地分支名>   // 将本地分支与远程同名分支相关联 // 简写方式：git push -u origin <本地分支名> 
+       2.3.2 git push                                      //将本地当前分支 推送到 与本地当前分支同名的远程分支上
+             或 
+             git push origin <远程同名分支名>
+
+3. 查询记录 
+    git diff --stat        #查看本地修改的文件
+    git log --stat         #查看修改的文件
+    git show "commit-id" --stat #查看修改的文件
+    git log "commit-id" -p #查看修改的内容
+    git log "commit-id" -p xx.cpp #查看指定文件的修改内容
 
 
-# don't input passwd everytime
-git config --global credential.helper store  
-
-# lookup branch and addr
-git remote -v
-git branch 
-
-# creat branch, switch branch or del branch
-git checkout -B i_branch_1 
-git checkout i_branch_1
-git branch -D i_branch_1
-
-# update or download files
-git update
-git pull
-git checkout .
-
-# upload
-git add xxx
-git commit -m "xx"
-git push
-
-#
+############################################################################################
 create a new repositorie named "i_project"  in web github
 
 #
@@ -51,10 +72,3 @@ git remote set-url origin https://<your_token>@github.com/twlklove/i_project.git
 #https://git-scm.com/book/zh/v2/Git-%E5%B7%A5%E5%85%B7-%E5%AD%90%E6%A8%A1%E5%9D%97
 #
 #
-
-git diff --stat        #查看本地修改的文件
-git log --stat         #查看修改的文件
-git show "commit-id" --stat #查看修改的文件
-git log "commit-id" -p #查看修改的内容
-git log "commit-id" -p xx.cpp #查看指定文件的修改内容
-
