@@ -45,6 +45,14 @@
        2.4.2
              git push origin HEAD:refs/heads/master     //needn't code review, and merge directly
 
+   2.5 merge
+       git push -o merge_request.create -o 
+       merge_request.title="<title>"
+       merge_request.description="xx"
+       merge_request.target=my-target-branch
+       merge_request.remove_source_branch
+       merge_request.label="Label with spaces"
+
 3. 查询记录 
     git diff --stat        #查看本地修改的文件
     git diff --cached      #look up content which has been added by "git add"
@@ -53,8 +61,19 @@
     git log "commit-id" -p #查看修改的内容
     git log "commit-id" -p xx.cpp #查看指定文件的修改内容
 
-4. reset #回退代码到提交后xx,HEAD~xx
-   git reset HEAD~1
+4. 撤销 #回退代码到提交后xx,HEAD~xx
+    git reset HEAD~1
+    git checkout [file]            // 撤销工作区某个文件的更改
+    git checkout .                 // 撤销工作区所有文件的更改
+    git reset [file]               // 重置暂存区的指定文件，与上一次commit保持一致。但更改并没有消失，而是更改打回工作区 
+    git reset --hard <当前分支名>  // 重置暂存区与工作区，与上一次commit保持一致。
+    git reset [commit]             // 重置当前分支的指针为指定commit，同时重置暂存区。但更改并没有消失，而是更改打回工作区  
+    git reset --hard [commit]      // 重置当前分支的HEAD为指定commit，同时重置暂存区和工作区，与指定commit一致。
+    git reset --keep [commit]      //重置当前HEAD为指定commit，但保持暂存区和工作区不变
+
+    // 暂时将未提交的变化存入stash，稍后再弹出
+    git stash
+    git stash pop
 
 ############################################################################################
 create a new repositorie named "i_project"  in web github
