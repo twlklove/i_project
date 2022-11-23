@@ -30,7 +30,7 @@
 2. push操作
    # upload
        git add xxx
-       git commit -m "xx"
+       git commit -m "xx"                           // or "git commit --amend"
    2.1 git push origin <本地分支名>:<远程分支名>    //将本地当前分支 推送到 远程指定分支上
    2.2 git push origin <本地分支名>                 //将本地当前分支 推送到 与本地当前分支同名的远程分支上
    
@@ -38,14 +38,23 @@
        2.3.2 git push                                      //将本地当前分支 推送到 与本地当前分支同名的远程分支上
              或 
              git push origin <远程同名分支名>
+    
+   2.4  
+       2.4.1 //need code review, and then merge; find using commit-id in web, and cherry pick it into master in order to do merge request.
+             git push origin HEAD:refs/for/master               
+       2.4.2
+             git push origin HEAD:refs/heads/master     //needn't code review, and merge directly
 
 3. 查询记录 
     git diff --stat        #查看本地修改的文件
+    git diff --cached      #look up content which has been added by "git add"
     git log --stat         #查看修改的文件
     git show "commit-id" --stat #查看修改的文件
     git log "commit-id" -p #查看修改的内容
     git log "commit-id" -p xx.cpp #查看指定文件的修改内容
 
+4. reset #回退代码到提交后xx,HEAD~xx
+   git reset HEAD~1
 
 ############################################################################################
 create a new repositorie named "i_project"  in web github
