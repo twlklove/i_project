@@ -1,0 +1,47 @@
+#vim
+   git clone https://github.com/vim/vim.git
+   cd vim/src
+   ./configure --prefix=/usr/local/vim \
+               --enalbe-pthoninterp=yes \
+               --eanble-python3interp=yes\
+               --with-python-command=python\
+               --with-python3-commnd=python3
+   make & make install
+   ln -s /usr/local/vim/bin/vim /usr/bin/vim
+usage: ctrl + w + w; ctrl+w+h/j/k/l; u or ctrl+r; y or 1+p 
+
+#vim plugin manager
+   git clone https://github.com/junegunn/vim-plug
+   cp vim-plug/plug.vim ~/.vim/autoload/ 
+#usage: PlugInstall, PlugStatus or PlugClean  # install lookup or uninstall
+
+##############     plugins #####################################
+#1. nerdtree   
+Plug 'https://github.com/scrooloose/nerdtree.git'     "show dir tree
+
+# ctags + taglist +  omnicppcomplete
+#2. ctags
+#install
+apt-get install exuberant-ctags
+##generate tags
+ctags -R --sort=yes --c++-kinds=+p --fields=+iaS --extras=+q --language-force=C++
+#usage: ctl+] goto define; ctl+T return src position; 
+#shift+8 is mark the function or variable; shift+K is look up man define; :!ctags **.c is update ctags
+#u is update tags; x is bigger or maller; + is open zhedie; - is close zhedie; = is open all zhedie; q close taglist window
+#d is del tags of the guangbiao file
+
+#3. taglist
+#Plug 'https://github.com/yegappan/taglist'
+#usage: TlistToggle
+
+#5.OmniCppComplete 
+#Plug 'http://github.com/okws/OmniCppComplete.git'
+
+#6. supertab
+#Plug 'https://github.com/ervandew/supertab'
+
+#6. stl
+git clone https://github.com/gcc-mirror/gcc
+mkdir -p ~/.vim/tags/gcc_tags
+ctags -R --sort=yes --c++-kinds=+p --fields=+iaS --extras=+q --language-force=C++
+#add gcc_tags to ~/.vimrc

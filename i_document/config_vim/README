@@ -1,0 +1,4 @@
+src file                cur file             copy_to_dir
+~/.bashrc       ---->   bashrc      -------> ~/.bashrc
+/etc/vimrc      ---->   vimrc       -------> ~/.vimrc
+/etc/DIR_COLORS ---->   dir_colors  -------> ~/.dir_colors
