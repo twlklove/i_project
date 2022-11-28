@@ -24,7 +24,11 @@ set expandtab                                          "ctrl-v is tab
 ""set bg=black ""dark
 set background=light              "#C7EDCC, as is 199 237 204
 
+"zf is do fold, zo is open fold,  zc is close fold
 set foldenable          "允许折叠  
+set foldmethod=syntax
+set foldlevel=100
+set foldcolumn=5 
 set foldmethod=manual   "手动折叠  
 
 "autocmd InsertLeave * se nocul  "用浅色高亮当前行  
@@ -67,17 +71,23 @@ Plug 'https://github.com/scrooloose/nerdtree.git'      "show dir tree
 let g:NERDTreeWinPos = "right"
 map <C-a> : NERDTree<CR>
 
+set tags+=~/.vim/tags/gcc_tags/tags
+map <C-u>:!ctags -R --sort=yes --c++-kinds=+p --fields=+iaS --extra=+q .<CR>
+
 " ctags + taglist +  omnicppcomplete
 Plug 'https://github.com/yegappan/taglist'
-let Tlist_Show_One_file=1                               "only show taglist for one file
+let Tlist_Ctags_Cmd='ctags'
 let Tlist_Exit_OnlyWindow=1
 let Tlist_Use_Left_Window=1
+let Tlist_Show_One_file=1                               "only show taglist for one file
 let Tlist_Sort_Type="name"
+let Tlist_File_Fold_Auto_CLose=1
+let Tlist_Process_File_Always=1
+let Tlist_Inc_WinWidth=0
+"let Tlist_Auto_Open=1
 map <C-b> :TlistToggle<CR>
 
 Plug 'http://github.com/okws/OmniCppComplete.git'
-set tags+=~/.vim/tags/gcc_tags/tags
-map <C-u>:!ctags -R --sort=yes --c++-kinds=+p --fields=+iaS --extra=+q .<CR>
 let OmniCpp_NamespaceSearch = 2
 let OmniCpp_GlobalScopeSearch = 1
 let OmniCpp_ShowAccess = 1
