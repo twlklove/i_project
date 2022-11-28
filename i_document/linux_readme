@@ -3,6 +3,6 @@
 
 #buildroot:
    git clone git://git.busybox.net/buildroot
-   git clone https://git.busybox.net/buildroot
+#   git clone https://git.busybox.net/buildroot
 
 
