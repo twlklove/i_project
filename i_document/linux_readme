@@ -5,4 +5,6 @@
    git clone git://git.busybox.net/buildroot
 #   git clone https://git.busybox.net/buildroot
 
+#busybox
+wget https://busybox.net/downloads/busybox-1.35.0.tar.bz2
 
