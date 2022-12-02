@@ -411,7 +411,7 @@ s32 set_socket_packet(u32 domain, u32 type, u32 fd)
     do {
         if (SOCK_PACKET != type) {
             u32 opt_value = 1;
-	    if (1 == cfg_ignore_outgoing) {
+	        if (1 == cfg_ignore_outgoing) {
                 ret = setsockopt(fd, SOL_PACKET, PACKET_IGNORE_OUTGOING, (u8*)&opt_value, sizeof(opt_value));
                 if (0 != ret) {
                     dump("fail to set sock, err is : %s\n", strerror(errno));
