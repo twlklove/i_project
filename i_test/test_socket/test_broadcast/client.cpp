@@ -1,58 +1,72 @@
-#include<stdio.h>
-#include<sys/socket.h>
-#include<unistd.h>
-#include<sys/types.h>
-#include<netdb.h>
-#include<netinet/in.h>
-#include<arpa/inet.h>
+#include <stdio.h>
+#include <unistd.h>
+
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <net/if.h>
+#include <arpa/inet.h>
+#include <netinet/tcp.h>
+
 #include<string.h>
 #include <iostream>
 
 using namespace std;
 
 int main()
-{
-        setvbuf(stdout,NULL,_IONBF,0);
-        fflush(stdout);
-        struct sockaddr_in addrto;
+{ 
+    int sock=-1;
+    if((sock=socket(AF_INET,SOCK_DGRAM,0))==-1)
+    {
+        cout<<"socket error..."<<endl;
+        return -1;
+    }
+
+#if 0   // bind to special eth
+#define ETH "ens33"
+    struct ifreq ifr;
+    memset(&ifr, 0, sizeof(ifr));
+    strncpy(ifr.ifr_name, ETH, strlen(ETH)+1);
+    setsockopt(sock, SOL_SOCKET, SO_BINDTODEVICE, &ifr, sizeof(ifr));
+#endif
+
+    int opt_value = 1;
+    setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &opt_value, sizeof(opt_value));
+
+    // must bind for udp
+    struct sockaddr_in addrto;
+    socklen_t len=sizeof(addrto);
+    bzero(&addrto,sizeof(struct sockaddr_in));
+    addrto.sin_family=AF_INET;
+    addrto.sin_addr.s_addr=htonl(INADDR_ANY);
+    addrto.sin_port=htons(6000);
+
+    if(bind(sock,(struct sockaddr*)&(addrto),len)==-1)
+    {
+        cout<<"bind error..."<<endl;
+        return -1;
+    } 
+    
+    char msg[100]={0}; 
+    struct in_addr addr;
+    while(1)
+    {
         bzero(&addrto,sizeof(struct sockaddr_in));
-        addrto.sin_family=AF_INET;
-        addrto.sin_addr.s_addr=htonl(INADDR_ANY);
-        addrto.sin_port=htons(6000);
-        socklen_t len=sizeof(addrto);
-        int sock=-1;
-        if((sock=socket(AF_INET,SOCK_DGRAM,0))==-1)
+        int ret=recvfrom(sock, msg, 100, 0, (struct sockaddr*)&addrto, &len);
+        if(ret<=0)
         {
-                cout<<"socket error..."<<endl;
-                return -1;
+            cout<<"read error..."<<endl;
         }
-        const int opt=-1;
-        int nb=0;
-        nb=setsockopt(sock,SOL_SOCKET,SO_BROADCAST,(char*)&opt,sizeof(opt));
-        if(nb==-1)
+        else
         {
-                cout<<"set socket errror..."<<endl;
-                return -1;
+            // inet_addr(), inet_aotn(), inet_ntoa()
+            addr.s_addr=addrto.sin_addr.s_addr;
+            printf("addr %s, port %d : %s\n", inet_ntoa(addr), ntohs(addrto.sin_port), msg);
         }
-        if(bind(sock,(struct sockaddr*)&(addrto),len)==-1)
-        {
-                cout<<"bind error..."<<endl;
-                return -1;
-        }
-        char msg[100]={0};
-        while(1)
-        {
-                int ret=recvfrom(sock,msg,100,0,(struct sockaddr*)&addrto,&len);
-                if(ret<=0)
-                {
-                        cout<<"read error..."<<endl;
-                }
-                else
-                {
-                        printf("%s\t",msg);
-                }
-                sleep(1);
-        }
-        return 0;
+        sleep(1);
+    }
+
+    return 0;
 }
 
