@@ -1,4 +1,0 @@
-git clone https://sourceware.org/git/glibc.git
-cd glibc
-git checkout master
-
