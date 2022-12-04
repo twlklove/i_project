@@ -1,16 +1,3 @@
-
-#git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git  #all versions
-#cd linux
-#git checkout -b v5.15 #git chekcout v5.15
-#git reset v5.15 --hard   # switch to v5.15
-#git branch -a -v
-#cd -
-git clone https://github.com/torvalds/linux.git
-
-git clone https://github.com/tensorflow/tensorflow.git
-git clone https://github.com/grpc/grpc.git
-git clone https://github.com/protocolbuffers/protobuf.git
-
 apt install -y gcc
 apt install -y g++
 apt install -y cmake
