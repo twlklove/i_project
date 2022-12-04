@@ -3,6 +3,7 @@ apt install -y g++
 apt install -y cmake
 apt install -y build-essential autoconf libtool pkg-config
 apt install -y libssl-dev
+apt install -y valgrind
 
 apt install -y python3-pip
 pip3 install numpy

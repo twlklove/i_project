@@ -26,63 +26,64 @@ void log_uninit();
 void set_dump_level(const u8 *level_name);  
 void set_dump_to_file(const u32 value);
 
-#define DUMP(level_num, ...) (                                                                                            \
-{                                                                                                                         \
-    do {                                                                                                                  \
-        if (!((level_num <= min_log_level) && (level_num >= max_log_level) && (level_num <= cur_log_level))) {            \
-            break;                                                                                                        \
-        }                                                                                                                 \
+#define DUMP(level_num, ...)                                                                                      \
+({                                                                                                                 \
+    do {                                                                                                          \
+        if (!((level_num <= min_log_level) && (level_num >= max_log_level) && (level_num <= cur_log_level))) {    \
+            break;                                                                                                \
+        }                                                                                                         \
         _DUMP_TO_STDOUT(level_num, __VA_ARGS__);                                                                  \
         _DUMP_TO_FILE(level_num, __VA_ARGS__);                                                                    \
-    }while(0);                                                                                                            \
+    }while(0);                                                                                                    \
 })
 
 // ## :concat two strings
 // #  :convert parameter to string
 // #@ :convert paremeter to char
 // __VA_ARGS__
-#define _DO_DUMP(p_file, level_num, ...) (                                                                                              \
-{                                                                                                                                   \
-    do {                                                                                                                            \
-        if (NULL == p_file) {                                                                                                       \
-            break;                                                                                                                  \
-        }                                                                                                                           \
-	struct timeval cur_time = {.tv_sec=0, .tv_usec=0};                                                                          \
-	u32 ret = gettimeofday(&cur_time, NULL);                                                                                    \
-        if(0 != ret) {                                                                                                              \
-	     cur_time.tv_usec = 0;                                                                                                  \
-	}                                                                                                                           \
-        u32 cur_ms = cur_time.tv_usec / 1000;                                                                                       \
-	if (stdout == p_file){\
-	    fprintf(p_file, levels[level_num][1]);                                                                                           \
-	}\
-        fprintf(p_file, "[%ld.%ld][%s][%s:%d:%s] ==> ", cur_time.tv_sec, cur_ms, levels[level_num][0], __FILE__, __LINE__, __FUNCTION__);          \
-	fprintf(p_file, __VA_ARGS__);                                                                                               \
-	if (stdout == p_file){\
-	    fprintf(p_file, "\033[0m");                                                                                           \
-	}\
-    }while(0);                                                                                                                      \
+#define _DO_DUMP(p_file, level_num, ...)                                                         \
+({                                                                                                 \
+    do {                                                                                          \
+        if (NULL == p_file) {                                                                     \
+            break;                                                                                \
+        }                                                                                         \
+	    struct timeval cur_time = {.tv_sec=0, .tv_usec=0};                                        \
+	    u32 ret = gettimeofday(&cur_time, NULL);                                                  \
+        if(0 != ret) {                                                                            \
+	         cur_time.tv_usec = 0;                                                                \
+	    }                                                                                         \
+        u32 cur_ms = cur_time.tv_usec / 1000;                                                     \
+	    if (stdout == p_file){                                                                    \
+	        fprintf(p_file, levels[level_num][1]);                                                \
+	    }                                                                                         \
+        fprintf(p_file, "[%lu.%u][%s][%s:%d:%s] ==> ",                                             \
+                cur_time.tv_sec, cur_ms, levels[level_num][0], __FILE__, __LINE__, __FUNCTION__); \
+	    fprintf(p_file, __VA_ARGS__);                                                             \
+	    if (stdout == p_file){                                                                    \
+	        fprintf(p_file, "\033[0m");                                                           \
+	    }                                                                                         \
+    }while(0);                                                                                    \
 })
 
-#define _DUMP_TO_STDOUT(level_num, ...) (                                                                                           \
-{                                                                                                                                   \
-    do {                                                                                                                            \
-        if (0 == (dump_to_file & 0x01)) {                                                                                           \
-            break;                                                                                                                  \
-        }                                                                                                                           \
-        _DO_DUMP(stdout, level_num, __VA_ARGS__);                                        \
-    }while(0);                                                                                                                      \
+#define _DUMP_TO_STDOUT(level_num, ...)                                                          \
+({                                                                                                \
+    do {                                                                                         \
+        if (0 == (dump_to_file & 0x01)) {                                                        \
+            break;                                                                               \
+        }                                                                                        \
+        _DO_DUMP(stdout, level_num, __VA_ARGS__);                                                \
+    }while(0);                                                                                   \
 })
 
 
-#define _DUMP_TO_FILE(level_num, ...) (                                                                                             \
-{                                                                                                                                   \
-    do {                                                                                                                            \
-        if (0 == (dump_to_file & 0x02)) {                                                                                           \
-            break;                                                                                                                  \
-        }                                                                                                                           \
-        _DO_DUMP(p_log_file, level_num, __VA_ARGS__);                                                                    \
-    }while(0);                                                                                                                      \
+#define _DUMP_TO_FILE(level_num, ...)                                                            \
+({                                                                                                \
+    do {                                                                                         \
+        if (0 == (dump_to_file & 0x02)) {                                                        \
+            break;                                                                               \
+        }                                                                                        \
+        _DO_DUMP(p_log_file, level_num, __VA_ARGS__);                                            \
+    }while(0);                                                                                   \
 })
 
 #endif

@@ -15,7 +15,7 @@ base_dir=$(project_dir)/base
 json_dir=$(base_dir)/cJSON
 main_dir=$(project_dir)/main
 
-CFLAGS+= -I $(main_dir) -I $(base_dir) -I $(json_dir) -Werror -O2 -g
+CFLAGS+= -I $(main_dir) -I $(base_dir) -I $(json_dir) -O2 -g #-Werror 
 
 src_files=$(main_dir)/main.c $(base_dir)/config.c $(base_dir)/log.c $(json_dir)/cJSON.c
 
