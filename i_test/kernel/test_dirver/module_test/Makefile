@@ -15,5 +15,5 @@ else
 		$(MAKE) $(CFLAGS) $(EXTRA_CFLAGS) -C $(KDIR) M=$(PWD)
 .PHONY:clean
 clean:
-	-rm -rf *.ko modules* Module* *.mod.c *.o *~
+	-rm -rf *.ko modules* Module* *.mod.c *.o *~ *.mod
 endif

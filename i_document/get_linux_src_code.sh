@@ -50,4 +50,18 @@ git clone https://github.com/grpc/grpc.git
 git clone https://github.com/protocolbuffers/protobuf.git
 git clone https://github.com/tensorflow/tensorflow.git
 
+## cppcheck
+wget yum install cppcheck http://sourceforge.net/projects/cppcheck/files/cppcheck/2.6/cppcheck-2.6.tar.gz
+tar xvf cppcheck-2.6.tar.gz
+cd cppcheck-2.6
+mkdir -p /usr/bin/cppcheck
+make -j9 FILESDIR=/usr/bin/cppcheck
+make install FILESDIR=/usr/bin/cppcheck
+#cp cfg your project dir
+cp cfg ../ -rf
+cd -
+
+## cJSON
+git clone https://github.com/DaveGamble/cJSON.git
+
 cd -
