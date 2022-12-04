@@ -33,6 +33,12 @@ git checkout master
 #cd glibc
 #git checkout release/2.36/master
 
+## openssl
+git clone https://github.com/openssl/openssl.git
+
+## opencv
+git clone https://github.com/opencv/opencv.git
+
 ## dhcp
 wget https://ftp.isc.org/isc/dhcp/4.4.3/dhcp-4.4.3.tar.gz
 
