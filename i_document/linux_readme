@@ -1,4 +1,17 @@
+#### version for linux
 The version for linux is in Makefile, such as 5.8.12
   5: the first number, is a main version number
   8: the second number, is a sub version number, it's stable. A even number means it's a stable version, and a odd number means it's not a stable version.
   12: the third number, is the number of modifying it.
+
+
+####systemctl
+systemctl status systemd-udevd
+systemd:
+    https://github.com/systemd/systemd
+systemd-udevd:
+    systemd/src/udev/udevadm.c  main<----->run()
+systemd-udevd:
+    /lib/udev/rules.d/
+    /etc/udev/rules.d/
+
