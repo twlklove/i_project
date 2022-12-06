@@ -1,0 +1,46 @@
+
+1. ############### Tftpd 
+https://www.filecroco.com/download-tftpd32/download/  # for windows
+
+2. ############### dhcp
+# dhcpcd is an implementation of the DHCP client specified in RFC2131
+     #https://www.linuxfromscratch.org/blfs/view/8.1/basicnet/dhcpcd.html
+# dhcp includes dhcpd and dhclient
+     # https://www.linuxfromscratch.org/blfs/view/8.1/basicnet/dhcp.html
+
+wget https://ftp.isc.org/isc/dhcp/4.4.3/dhcp-4.4.3.tar.gz
+  # for aarch64 modify
+  # cd bind; add content below:
+  # 1. compile_dir=xx/gcc-xx/bin ## compile tool dir
+  # 2. bindconfig += --with-randomdev=no ac_cv_file__dev_random=yes BUILD_CC=gcc \
+                  #   --host=aarch64-linux-gnu  \
+                  #   CC=${compile_dir}/aarch64-linux-gnu-gcc \
+                  #   CXX=${compile_dir}/aarch64-linux-gnu-g++  \
+                  #   AR=${compile_dir}/aarch64-linux-gnu-ar  \
+                  #   LD=${compile_dir}/aarch64-linux-gnu-ld 
+  # 3. modify: ./configure ${bindconfig} > ${binddir}/configure.log && \
+               sed -i 's/\${CONFIG_CC}/\${CC}/g' lib/dns/Makefile; \
+  # 4. cd dhcp; compile_dir=xx/gcc-xx/bin
+  #    ./configure --with-randomdev=no ac_cv_file__dev_random=yes BUILD_CC=gcc \
+                  #   --host=aarch64-linux-gnu  \
+                  #   CC=${compile_dir}/aarch64-linux-gnu-gcc \
+                  #   CXX=${compile_dir}/aarch64-linux-gnu-g++  \
+                  #   AR=${compile_dir}/aarch64-linux-gnu-ar  \
+                  #   LD=${compile_dir}/aarch64-linux-gnu-ld
+  # release: server/dhcpd; client/dhclient 
+  # dhcp -cf dhcp.conf; dhcp.conf is below:
+  # subnet 192.168.33.0 netmask 255.255.255.0 {  # bind server socket to eth0 which ip is 192.168.33.x
+  #     range 192.168.33.4 192.168.33.254;
+  #     option subnet-mask 255.255.255.0;
+  #     option routers 192.168.33.1;
+  #     default-lease-time 3600;
+  #     max-lease-time 3600;
+  #  }
+  # subnet 10.11.22.0 netmask 255.255.255.0 {   # bind server socket to eth1 which ip is 10.11.22.x
+  #     range 10.11.22.2 10.11.22.254;
+  #     option subnet-mask 255.255.255.0;
+  #     option routers 10.11.22.1;
+  #     default-lease-time 3600;
+  #     max-lease-time 3600;
+  #  }
+
