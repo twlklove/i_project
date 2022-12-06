@@ -1,0 +1,8 @@
+
+compile_dir=/usr/bin/ ## compile tool dir
+./configure --with-randomdev=no ac_cv_file__dev_random=yes BUILD_CC=gcc \
+            --host=aarch64-linux-gnu  \
+             CC=${compile_dir}/aarch64-linux-gnu-gcc \
+             CXX=${compile_dir}/aarch64-linux-gnu-g++  \
+             AR=${compile_dir}/aarch64-linux-gnu-ar  \
+             LD=${compile_dir}/aarch64-linux-gnu-ld  
