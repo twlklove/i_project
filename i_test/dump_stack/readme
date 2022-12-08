@@ -1,0 +1,16 @@
+addr2line原理：
+在可执行程序中都包含有调试信息（所以编译的时候需要加-g选项）,
+    其中很重要的一份数据就是程序源程序的行号和编译后的机器代码之间的对应关系 Line Number Statements。
+     Line Number Statements 存储在可执行程序的.debug_line域。
+    使用命令：readelf -w run | grep "advance Address"
+
+addr2line addr -e run -f -s -C  # addr is the info pointed by ip reg.
+for example :
+    grep my_func2 test.map
+       #output:
+       #   0x000000000000139d                my_func2    // or get addr by ip reg
+    
+    addr2line 139d -e run -f -s -C
+       #output:
+       #  my_func2
+       #  dump_stack.c:45
