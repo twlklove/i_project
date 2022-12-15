@@ -11,15 +11,15 @@ set cursorline   "high light line
 highlight CursorLine   cterm=bold ctermbg=lightgray ctermfg=red guibg=NONE guifg=NONE
 highlight CursorColumn cterm=NONE ctermbg=yellow ctermfg=NONE guibg=NONE guifg=NONE
 
+set tabstop=4 "as is set ts=4
+set softtabstop=4
+set shiftwidth=4
+set expandtab                                          "ctrl-v is tab
+
 set backup
 set nu
 set autoindent
 set cindent
-
-set tabstop=4
-set softtabstop=4
-set shiftwidth=4
-set expandtab                                          "ctrl-v is tab
 
 ""set bg=black ""dark
 set background=light              "#C7EDCC, as is 199 237 204
