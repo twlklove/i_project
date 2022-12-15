@@ -79,6 +79,7 @@
    git tag -a v1.0 -m "tag info"
    git tag -a v1.0 -m "tag info" commit-id   #为已经提交的commit打tag
    git tag                     #查询tag
+   git show v1.0               #显示tag详细信息
 
 ############################################################################################
 create a new repositorie named "i_project"  in web github
