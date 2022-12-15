@@ -75,6 +75,11 @@
     git stash
     git stash pop
 
+5. 打tag
+   git tag -a v1.0 -m "tag info"
+   git tag -a v1.0 -m "tag info" commit-id   #为已经提交的commit打tag
+   git tag                     #查询tag
+
 ############################################################################################
 create a new repositorie named "i_project"  in web github
 
