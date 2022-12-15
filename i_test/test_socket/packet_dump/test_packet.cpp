@@ -72,7 +72,7 @@ typedef enum {
     PROTO_OTHER_MSG     =   0x0400000b, 
 }msg_type;
 const char *msg_infos[] = {"all packet", "arp", "arp req", "arp reply", "udp", "broadcast", 
-	                   "dhcp", "dhcp req", "dhcp resp", "udp_normal", "tcp", "other_msg"};
+                       "dhcp", "dhcp req", "dhcp resp", "udp_normal", "tcp", "other_msg"};
 
 typedef struct {
     msg_type msg_type_id;
@@ -92,16 +92,16 @@ typedef struct
     union
     {
         struct 
-	{
-	    struct iphdr __ip_hdr;
-	    union
-	    {
+        {
+            struct iphdr __ip_hdr;
+            union
+            {
                 struct tcphdr ___tcp_hdr;
-		struct udphdr ___udp_hdr;
-	    }__trans_hdr;
-	}_inet_hdr;
+                struct udphdr ___udp_hdr;
+            }__trans_hdr;
+        }_inet_hdr;
 
-	struct ether_arp _arp_hdr;
+        struct ether_arp _arp_hdr;
     }proto_hdr;
 
 #define p_ether_hdr_dst_mac          ether_hdr.ether_dhost   //ETHER_ADDR_LEN
@@ -151,11 +151,11 @@ typedef struct
 ({                                                                             \
     s32 ret = 0;                                                               \
     do {                                                                       \
-        u64 dst_mac_0 = ntohl(*((u32*)(p_head->p_ether_hdr_dst_mac)));         \
-        u64 dst_mac_1 = ntohs(*((u16*)(p_head->p_ether_hdr_dst_mac + 4)));     \
+        u64 dst_mac_0 = ntohl(*((u32*)((p_head)->p_ether_hdr_dst_mac)));         \
+        u64 dst_mac_1 = ntohs(*((u16*)((p_head)->p_ether_hdr_dst_mac + 4)));     \
         u64 dst_mac = ((dst_mac_0 << 16) | dst_mac_1);                         \
-	if (0xFFFFFFFFFFFF == dst_mac) {                                       \
-            ret = 1;                                                           \
+        if (0xFFFFFFFFFFFF == dst_mac) {                                       \
+                ret = 1;                                                           \
         }                                                                      \
     } while(0);                                                                \
     ret;                                                                       \
@@ -165,7 +165,7 @@ typedef struct
 ({                                                                             \
     s32 ret = 0;                                                               \
     do {                                                                       \
-	if (IP_HEADER_BASE_SIZE == p_head->ip_hdr_len * 4) {                   \
+        if (IP_HEADER_BASE_SIZE == ((p_head)->ip_hdr_len) * 4) {                   \
             ret = 1;                                                           \
         }                                                                      \
     } while(0);                                                                \
@@ -176,7 +176,7 @@ typedef struct
 ({                                                                             \
     s32 ret = 0;                                                               \
     do {                                                                       \
-	if (TCP_HEADER_BASE_SIZE == p_head->tcp_hdr_len * 4) {                 \
+        if (TCP_HEADER_BASE_SIZE == ((p_head)->tcp_hdr_len) * 4) {                 \
             ret = 1;                                                           \
         }                                                                      \
     } while(0);                                                                \
@@ -213,15 +213,17 @@ u32 verify_tcp_checksum(u8 *p_data, u16 data_len)
     frame_header_no_hdr_extend *p_head = (frame_header_no_hdr_extend*)p_data;  
     u32 tcp_len = ntohs(p_head->ip_tot_len) - p_head->ip_hdr_len * 4;
     dump("src port is %04x, dst port is %04x, ip len is %d, tcp len is %d\n", 
-	       ntohs(p_head->tcp_src_port), ntohs(p_head->tcp_dst_port), ntohs(p_head->ip_tot_len), tcp_len);
+           ntohs(p_head->tcp_src_port), ntohs(p_head->tcp_dst_port), ntohs(p_head->ip_tot_len), tcp_len);
  
-    //for send packet, csum is not finally csum, here is csum = ~tcp_v4_check(tcp_len, p_head->ip_saddr, p_head->ip_daddr, csum), so dont't check here
+    /* for send packet, csum is not finally csum, here is csum = ~tcp_v4_check(tcp_len, p_head->ip_saddr, p_head->ip_daddr, csum), 
+     * so dont't check here */
+
     if (eth_ip == ntohl(p_head->ip_saddr)) { 
-	dump("==>[T]\n");
+        dump("[T] ==> a send packet\n");
         return 0;
     }
 
-    dump("==>[R]\n");
+    dump("[R] ==> a recv packet\n");
 
     struct tcphdr *p_tcph = (struct tcphdr*)(&(p_head->tcp_hdr));
     u16 src_check = p_head->tcp_check;
@@ -235,10 +237,10 @@ u32 verify_tcp_checksum(u8 *p_data, u16 data_len)
     csum = tcp_v4_check(tcp_len, p_head->ip_saddr, p_head->ip_daddr, csum);
     if (csum != src_check) {
         ret = 1;
-	dump("error: tcp calc checksum is %04x, src checksum is %04x\n", ntohs(csum), ntohs(src_check)); 
+        dump("error: tcp calc checksum is %04x, src checksum is %04x\n", ntohs(csum), ntohs(src_check)); 
     }
     else {
-	dump_debug("tcp calc checksum is %04x, src checksum is %04x\n", ntohs(csum), ntohs(src_check)); 
+        dump_debug("tcp calc checksum is %04x, src checksum is %04x\n", ntohs(csum), ntohs(src_check)); 
     }
 
     p_head->tcp_check = src_check;
@@ -258,10 +260,10 @@ u32 verify_ip_checksum(u8 *p_data, u16 data_len)
     csum = ip_fast_csum((u8*)(&(p_head->ip_hdr)), p_head->ip_hdr_len);
     if (csum != src_check) {
         ret = 1;
-	dump("error: ip calc checksum is %04x, src checksum is %04x\n", ntohs(csum), ntohs(src_check)); 
+        dump("error: ip calc checksum is %04x, src checksum is %04x\n", ntohs(csum), ntohs(src_check)); 
     }
     else {
-	dump_debug("ip calc checksum is %04x, src checksum is %04x\n", ntohs(csum), ntohs(src_check)); 
+        dump_debug("ip calc checksum is %04x, src checksum is %04x\n", ntohs(csum), ntohs(src_check)); 
     }
 
     p_head->ip_check = src_check;
@@ -274,11 +276,11 @@ u32 verify_checksum(u8 *p_data, u16 data_len)
     u32 ret = 0;
     do {
         ret = verify_tcp_checksum(p_data, data_len);
-	if (0 != ret) {
+        if (0 != ret) {
             break;
-	}
+        }
 
-	ret = verify_ip_checksum(p_data, data_len);
+        ret = verify_ip_checksum(p_data, data_len);
     } while(0);
     return ret;
 }
@@ -288,28 +290,28 @@ s32 modify_eth_flag(s32 fd, char *p_eth_name, u8 cmd, u32 flag)
     s32 ret = 0;
 
     do {
-	struct ifreq ifr;
-	bzero(&ifr, sizeof(ifr));
-	strncpy(ifr.ifr_name, p_eth_name, sizeof(ifr.ifr_name)-1);
-	ret = ioctl(fd, SIOCGIFFLAGS, &ifr);
-	if (0 != ret) {
-	    dump("fail to get if flags\n");
-	    break;
-	}
+        struct ifreq ifr;
+        bzero(&ifr, sizeof(ifr));
+        strncpy(ifr.ifr_name, p_eth_name, sizeof(ifr.ifr_name)-1);
+        ret = ioctl(fd, SIOCGIFFLAGS, &ifr);
+        if (0 != ret) {
+            dump("fail to get if flags\n");
+            break;
+        }
 
-	dump_debug("modify eth flag, cmd is %d\n", cmd);
-	if (OPEN_ETH_FLAG == cmd) {  //open
-	    ifr.ifr_flags |= flag;
-	}
-	else {           //close
-	    ifr.ifr_flags &= ~flag;
-	}
+        dump_debug("modify eth flag, cmd is %d\n", cmd);
+        if (OPEN_ETH_FLAG == cmd) {  //open
+            ifr.ifr_flags |= flag;
+        }
+        else {           //close
+            ifr.ifr_flags &= ~flag;
+        }
 
-	ret = ioctl(fd, SIOCSIFFLAGS, &ifr);
-	if (0 != ret) {
-	    dump("fail to open promisc\n");
-	    break;
-	}
+        ret = ioctl(fd, SIOCSIFFLAGS, &ifr);
+        if (0 != ret) {
+            dump("fail to open promisc\n");
+            break;
+        }
     } while(0);
 
     return ret;
@@ -318,62 +320,62 @@ s32 modify_eth_flag(s32 fd, char *p_eth_name, u8 cmd, u32 flag)
 
 void parse_data(u8 *p_data, u32 data_len, msg_info *p_msg_info)
 {
-    if ((NULL == p_data) || (NULL == p_msg_info) || (data_len < ETH_MIN_FRAME_LEN) || (data_len > ETH_MAX_FRAME_LEN)){
+    if ((NULL == p_data) || (NULL == p_msg_info) || (data_len < ETH_MIN_FRAME_LEN) || (data_len > ETH_MAX_FRAME_LEN)) {
         dump("null pointer, data len is %d\n", data_len);
-	return;
+        return;
     }
 
     frame_header_no_hdr_extend *p_head = (frame_header_no_hdr_extend*)p_data;
 
     if (IS_BROADCAST(p_head)) {
-	p_msg_info->msg_type_id = PROTO_BROADCAST;
-	dump_debug("broadcast msg\n");
-	return;
+        p_msg_info->msg_type_id = PROTO_BROADCAST;
+        dump_debug("broadcast msg\n");
+        return;
     }
 
     u16 ether_type = ntohs(p_head->ether_hdr_type);
     if (ETHERTYPE_IP == ether_type) {
-	if(!IS_NO_IP_EXTEND_HEADER(p_head)) {
-	    return;
-	}
+        if(!IS_NO_IP_EXTEND_HEADER(p_head)) {
+            return;
+        }
 
         u8 proto_id = p_head->ip_protocol;
-	if (IPPROTO_UDP == proto_id) {
-	    u16 src_port = ntohs(p_head->udp_src_port);
-	    if (DHCP_REQ_PORT == src_port) {
-		p_msg_info->msg_type_id = PROTO_DHCP_REQ;
-	    }
-	    else if (DHCP_RESP_PORT == src_port) { 
-		p_msg_info->msg_type_id = PROTO_DHCP_RESP;
-	    }
-	    else {
-		p_msg_info->msg_type_id = PROTO_UDP_NORMAL;
-	    }
-	}
-	else if (IPPROTO_TCP == proto_id) {
-	    if(IS_NO_IP_EXTEND_HEADER(p_head)) {
-	        ; //
-	    }
-	    p_msg_info->msg_type_id = PROTO_TCP;
-	}
-	else {
-	    dump_debug("other ip msg, proto id is %d\n", proto_id);
-	}
-    }
+        if (IPPROTO_UDP == proto_id) {
+            u16 src_port = ntohs(p_head->udp_src_port);
+            if (DHCP_REQ_PORT == src_port) {
+                p_msg_info->msg_type_id = PROTO_DHCP_REQ;
+            }
+            else if (DHCP_RESP_PORT == src_port) { 
+                p_msg_info->msg_type_id = PROTO_DHCP_RESP;
+            }
+            else {
+                p_msg_info->msg_type_id = PROTO_UDP_NORMAL;
+            }
+        }
+        else if (IPPROTO_TCP == proto_id) {
+            if(IS_NO_IP_EXTEND_HEADER(p_head)) {
+                ; //
+            }
+            p_msg_info->msg_type_id = PROTO_TCP;
+        }
+        else {
+            dump_debug("other ip msg, proto id is %d\n", proto_id);
+        }
+    } 
     else if (ETHERTYPE_ARP == ether_type) {
-	u16 op_cmd = ntohs(p_head->arp_op_cmd);
+        u16 op_cmd = ntohs(p_head->arp_op_cmd);
         if (ARPOP_REQUEST == op_cmd) {
-	    p_msg_info->msg_type_id = PROTO_ARP_REQ;
-	}
-	else if (ARPOP_REPLY == op_cmd) {
-	    p_msg_info->msg_type_id = PROTO_ARP_REPLY;
-	}
-	else {
-	    dump_debug("other arp msg, op is 0x%4x\n", op_cmd);
-	}
-    }
+            p_msg_info->msg_type_id = PROTO_ARP_REQ;
+        }
+        else if (ARPOP_REPLY == op_cmd) {
+            p_msg_info->msg_type_id = PROTO_ARP_REPLY;
+        }
+        else {
+            dump_debug("other arp msg, op is 0x%4x\n", op_cmd);
+        }
+    } 
     else {
-	dump_debug("other msg, ether type is 0x%04x\n", ether_type);
+        dump_debug("other msg, ether type is 0x%04x\n", ether_type);
     } 
 }
 
@@ -381,7 +383,7 @@ u8 is_cfg_dump_proto_msg(msg_info *p_msg_info)
 {
     u8 ret = 0;
     if (NULL == p_msg_info) {
-	dump("null pointer\n");
+        dump("null pointer\n");
         return 0;
     }
     
@@ -390,11 +392,11 @@ u8 is_cfg_dump_proto_msg(msg_info *p_msg_info)
     u16 cur_proto_info_index = (p_msg_info->msg_type_id) & proto_info_mask;
    
     dump_debug("cfg prot id is %08x, cfg sub proto id is %08x, cur proto id is %08x, cur sub proto id is %08x\n", 
-		                        cfg_dump_proto_id, cfg_dump_sub_proto_id, cur_proto_id, cur_sub_proto_id);  
+                                cfg_dump_proto_id, cfg_dump_sub_proto_id, cur_proto_id, cur_sub_proto_id);  
     if ((0 == cfg_dump_proto_id)
         || ((cfg_dump_proto_id == cur_proto_id) 
            && ((0 == cfg_dump_sub_proto_id) || (cfg_dump_sub_proto_id == cur_sub_proto_id)))) {
-	dump("msg type is %s\n", msg_infos[cur_proto_info_index]);
+        dump("msg type is %s\n", msg_infos[cur_proto_info_index]);
         ret = 1;
     }
 
@@ -411,17 +413,17 @@ s32 set_socket_packet(u32 domain, u32 type, u32 fd)
     do {
         if (SOCK_PACKET != type) {
             u32 opt_value = 1;
-	        if (1 == cfg_ignore_outgoing) {
+            if (1 == cfg_ignore_outgoing) {
                 ret = setsockopt(fd, SOL_PACKET, PACKET_IGNORE_OUTGOING, (u8*)&opt_value, sizeof(opt_value));
                 if (0 != ret) {
                     dump("fail to set sock, err is : %s\n", strerror(errno));
                     break;
-                }	
+                }    
             } 
 
             struct ifreq ifr;
             bzero(&ifr, sizeof(ifr)); 
-            strncpy(ifr.ifr_name, cfg_p_eth_name, sizeof(cfg_p_eth_name) - 1);	
+            strncpy(ifr.ifr_name, cfg_p_eth_name, sizeof(cfg_p_eth_name) - 1);    
             ret = ioctl(fd, SIOCGIFINDEX, &ifr);   //SIOCSIFFLAGS, SIOCGIFADDR, SIOCGIFHWADDR, SIOCGIFTXQLEN, in net/core/dev_ioctl.c
             if (0 != ret) {
                 dump("fail to get eth index, err is : %s\n", strerror(errno));
@@ -429,7 +431,7 @@ s32 set_socket_packet(u32 domain, u32 type, u32 fd)
             }
             
             struct sockaddr_ll addr;
-            bzero(&addr, sizeof(addr));	
+            bzero(&addr, sizeof(addr));    
             addr.sll_family = domain;
             addr.sll_ifindex = ifr.ifr_ifindex;
             ret = bind(fd, (struct sockaddr*)&addr, sizeof(addr));
@@ -459,7 +461,7 @@ u32 get_ipv4(u32 fd)
     u32 ip = 0;
     struct ifreq ifr;
     bzero(&ifr, sizeof(ifr)); 
-    strncpy(ifr.ifr_name, cfg_p_eth_name, sizeof(cfg_p_eth_name) - 1);	
+    strncpy(ifr.ifr_name, cfg_p_eth_name, sizeof(cfg_p_eth_name) - 1);    
     s32 ret = ioctl(fd, SIOCGIFADDR, &ifr);   //SIOCSIFFLAGS, SIOCGIFADDR, SIOCGIFHWADDR, SIOCGIFTXQLEN, in net/core/dev_ioctl.c
     if (0 == ret) {
         ip = ntohl((*((struct sockaddr_in*)(&ifr.ifr_addr))).sin_addr.s_addr);
@@ -480,109 +482,109 @@ void *recv_thread(void *p_args)
     do {
         s32 domain = PF_PACKET;
         //s32 type = SOCK_PACKET;
-	s32 type = SOCK_RAW;
+        s32 type = SOCK_RAW;
         s32 protocol = htons((u16)(ETH_P_ALL));
-        fd = socket(domain, type, protocol);	
+        fd = socket(domain, type, protocol);    
         if (-1 == fd) {
             dump("fail to create socket\n");
             ret = fd;
             break;
         }
 
-	if (PF_PACKET == domain) {
+        if (PF_PACKET == domain) {
             ret = set_socket_packet(domain, type, fd);
-	    if (0 != ret) {
-                break;
-	    }
-	}
+            if (0 != ret) {
+                    break;
+            }
+        }
 
         u32 ip = get_ipv4(fd);
         if (0 == ip) {
-	    dump("ip is %d\n", ip);
-	    break;
-	}	
+            dump("ip is %d\n", ip);
+            break;
+        } 
+
         eth_ip = ip;
-
         ret = modify_eth_flag(fd, cfg_p_eth_name, OPEN_ETH_FLAG, IFF_PROMISC);
-	if (0 != ret) {
+        if (0 != ret) {
             dump("fail to open promisc\n");
-	    break;
-	}
+            break;
+        }
 
-	s32 max_events = 20;
-	epfd = epoll_create(max_events);
-	if (-1 == epfd) {
-	    dump("fail to create epoll\n");
-	    break;
-	}
+        s32 max_events = 20;
+        epfd = epoll_create(max_events);
+        if (-1 == epfd) {
+            dump("fail to create epoll\n");
+            break;
+        }
 
-	struct epoll_event ev;
-	ev.events = EPOLLIN;
-	ev.data.fd = fd;
-	if (0 != epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev)) {
-	    dump("fail to add %d to epoll\n", fd);
-	    break;
-	}
+        struct epoll_event ev;
+        ev.events = EPOLLIN;
+        ev.data.fd = fd;
+        if (0 != epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev)) {
+            dump("fail to add %d to epoll\n", fd);
+            break;
+        }
 
-	struct epoll_event events[max_events];
-	memset(events, 0, sizeof(events));
-	struct sockaddr remote_addr;
-	bzero(&remote_addr, sizeof(remote_addr));
-	strncpy(remote_addr.sa_data, cfg_p_eth_name, sizeof(remote_addr.sa_data) - 1);
-	socklen_t remote_addr_len = sizeof(remote_addr);
+        struct epoll_event events[max_events];
+        memset(events, 0, sizeof(events));
+        struct sockaddr remote_addr;
+        bzero(&remote_addr, sizeof(remote_addr));
+        strncpy(remote_addr.sa_data, cfg_p_eth_name, sizeof(remote_addr.sa_data) - 1);
+        socklen_t remote_addr_len = sizeof(remote_addr);
 
-	/* ETH_FRAME_LEN = 1514; ETH_ZLEN = 60; ETH_CRC_LEN = 4; 
-	   ETHER_MAX_LEN=ETH_FRAME_LEN + ETHER_CRC_LEN, ETHER_MIN_LEN=ETH_ZLEN + ETHER_CRC_LEN, defined in net/ethernet.h*/
-	u32 max_data_size = ETH_FRAME_LEN;  
-	u8 buf[max_data_size] = {0};
+        /* ETH_FRAME_LEN = 1514; ETH_ZLEN = 60; ETH_CRC_LEN = 4; 
+           ETHER_MAX_LEN=ETH_FRAME_LEN + ETHER_CRC_LEN, ETHER_MIN_LEN=ETH_ZLEN + ETHER_CRC_LEN, defined in net/ethernet.h*/
+        u32 max_data_size = ETH_FRAME_LEN;  
+        u8 buf[max_data_size] = {0};
         u32 dump_count = 0;
-	u32 cur_proto_id = 0;
-	u32 cur_sub_proto_id = 0;
-	u16 cur_proto_info_index = 0;
-	msg_info msg_info_tmp;
-	u32 len = 0;
+        u32 cur_proto_id = 0;
+        u32 cur_sub_proto_id = 0;
+        u16 cur_proto_info_index = 0;
+        msg_info msg_info_tmp;
+        s32 len = 0;
 
-	while (recv_thread_running) {
-	    s32 fds = epoll_wait(epfd, events, max_events, 200);
-	    u32 i = 0;
-	    for (i = 0; i < fds; i++) {
-	        if ((events[i].events & EPOLLIN) || (events[i].events & EPOLLPRI)) {
+        while (recv_thread_running) {
+            s32 fds = epoll_wait(epfd, events, max_events, 200);
+            u32 i = 0;
+            for (i = 0; i < fds; i++) {
+                if ((events[i].events & EPOLLIN) || (events[i].events & EPOLLPRI)) {
                     s32 fd_tmp = events[i].data.fd; 
-	    	    if (fd_tmp < 0) {
-	    	        dump("recv fd_tmp < 0\n");
-	    	        continue;
-	    	    }
-
-		    if (fd != fd_tmp) {
-	                continue;
-		    }
-                    
-		    memset(buf, 0, max_data_size);
-	    	    len = recvfrom(fd_tmp, buf, max_data_size, 0, &remote_addr, &remote_addr_len);
-		    if ((len < ETH_MIN_FRAME_LEN) || (len > ETH_MAX_FRAME_LEN)) {
-			dump("len is wrong : %d\n", len);
-		    }
-
-		    memset(&msg_info_tmp, 0, sizeof(msg_info_tmp));
-		    parse_data(buf, len, &msg_info_tmp);
-                   
-		    if (PROTO_TCP == msg_info_tmp.msg_type_id) {
-		        ret = verify_checksum(buf, len);
-		        if (ret != 0) {
-                            //continue;
-		        }
+                    if (fd_tmp < 0) {
+                        dump("recv fd_tmp < 0\n");
+                        continue;
                     }
 
-                    if ((1 == is_cfg_dump_proto_msg(&msg_info_tmp)) && (dump_count < cfg_dump_count)) {	
-			dump_data(buf, len);
-			dump_count++;
-		    }
-	        }
-	    }
+                    if (fd != fd_tmp) {
+                        continue;
+                    }
+                            
+                    memset(buf, 0, max_data_size);
+                    len = recvfrom(fd_tmp, buf, max_data_size, 0, NULL, NULL);  //send: sendto(fd_tmp, buf, len, MSG_DONOTWAIT, NULL, 0);
+                    if ((len < ETH_MIN_FRAME_LEN) || (len > ETH_MAX_FRAME_LEN)) {
+                        dump("len is wrong : %d\n", len);
+                    }
 
-	    if (dump_count >= cfg_dump_count) {
-	        break;
-	    }
+                    memset(&msg_info_tmp, 0, sizeof(msg_info_tmp));
+                    parse_data(buf, len, &msg_info_tmp);
+                           
+                    if (PROTO_TCP == msg_info_tmp.msg_type_id) {
+                        ret = verify_checksum(buf, len);
+                        if (ret != 0) {
+                            //continue;
+                        }
+                    }
+
+                    if ((1 == is_cfg_dump_proto_msg(&msg_info_tmp)) && (dump_count < cfg_dump_count)) {    
+                        dump_data(buf, len);
+                        dump_count++;
+                    }
+                }
+            }
+
+            if (dump_count >= cfg_dump_count) {
+                break;
+            }
         }
     } while(0);
 
@@ -596,7 +598,7 @@ void *recv_thread(void *p_args)
     }
 
     if (epfd >= 0) {
-	close(epfd);
+        close(epfd);
     }
 
     return ((void*)(0));
@@ -619,16 +621,16 @@ s32 parse_args(s32 argc, char *argv[])
     s32 ret = 0;
     char *short_opts = (char*)"i:abudtc:s::hR";
     struct option long_opts[] = {
-	{"eth",        required_argument, NULL, 'i'},
+        {"eth",        required_argument, NULL, 'i'},
         {"arp",        no_argument,       NULL, 'a'},
-	{"broadcast",  no_argument,       NULL, 'b'},
+        {"broadcast",  no_argument,       NULL, 'b'},
         {"udp",        no_argument,       NULL, 'u'},
         {"dhcp",       no_argument,       NULL, 'd'},
         {"tcp",        no_argument,       NULL, 't'},
-	{"count",      required_argument, NULL, 'c'},
-	{"dump_len",   optional_argument, NULL, 's'},
+        {"count",      required_argument, NULL, 'c'},
+        {"dump_len",   optional_argument, NULL, 's'},
         {"recv",       optional_argument, NULL, 'R'},
-	{"help",       no_argument,       NULL, 'h'},
+        {"help",       no_argument,       NULL, 'h'},
         {0, 0, 0, 0},
     };
 
@@ -638,55 +640,55 @@ s32 parse_args(s32 argc, char *argv[])
         switch(opt) {
             case 'i':
                 dump_debug("%s\n", optarg);
-		cfg_p_eth_name = optarg;          // optarg is argv[optind-1]
+                cfg_p_eth_name = optarg;          // optarg is argv[optind-1]
                 break;
-	    case 'a':
+            case 'a':
                 cfg_dump_proto = PROTO_ARP;
                 break;
             case 'b':
-		dump_debug("%s\n", argv[optind-1]);
+                dump_debug("%s\n", argv[optind-1]);
                 cfg_dump_proto = PROTO_BROADCAST;
                 break;
             case 'u':
-		dump_debug("%s\n", argv[optind-1]);
+                dump_debug("%s\n", argv[optind-1]);
                 cfg_dump_proto = PROTO_UDP;
                 break;
-	    case 'd':
-		dump_debug("%s\n", argv[optind-1]);
-		cfg_dump_proto = PROTO_DHCP;
+            case 'd':
+                dump_debug("%s\n", argv[optind-1]);
+                cfg_dump_proto = PROTO_DHCP;
                 break;
-	    case 't':
-		dump_debug("%s\n", argv[optind-1]);
+            case 't':
+                dump_debug("%s\n", argv[optind-1]);
                 cfg_dump_proto = PROTO_TCP;
                 break;
-	    case 'c':
-		dump_debug("%s\n", argv[optind-1]);
+            case 'c':
+                dump_debug("%s\n", argv[optind-1]);
                 cfg_dump_count = atoi(argv[optind - 1]);
-		break;
-	    case 's':
-		dump_debug("%s\n", argv[optind - 1]);
-		dump_debug("%s\n", argv[optind]);
-		cfg_dump_len = atoi(argv[optind]);
                 break;
-	    case 'h':
-		help();
+            case 's':
+                dump_debug("%s\n", argv[optind - 1]);
+                dump_debug("%s\n", argv[optind]);
+                cfg_dump_len = atoi(argv[optind]);
+                break;
+            case 'h':
+                help();
                 exit(0);
-	    case 'R':
-		cfg_ignore_outgoing = 1;
+            case 'R':
+                cfg_ignore_outgoing = 1;
                 break;
-	    default:
-		help();
-		ret = -1;
-		return ret;
+            default:
+                help();
+                ret = -1;
+                return ret;
         }
     }
 
     if (optind > argc) { 
-	dump("wrong optind %d\n", optind);
-	ret = -1;
+        dump("wrong optind %d\n", optind);
+        ret = -1;
     }
     else {
-	dump_debug("cfg proto is %08x\n", cfg_dump_proto);
+        dump_debug("cfg proto is %08x\n", cfg_dump_proto);
         cfg_dump_proto_id = cfg_dump_proto & proto_mask;
         cfg_dump_sub_proto_id = cfg_dump_proto & sub_proto_mask;
     }
@@ -701,24 +703,24 @@ s32 main(s32 argc, s8 *argv[])
     s32 ret = 0;
 
     do {
-	ret = parse_args(argc, argv);
+        ret = parse_args(argc, argv);
         if (0 != ret) {
             dump("fail to parse args\n");
             break;
         }
 
-	int signum = SIGINT; //SIGTERM;//SIGINT;
+        int signum = SIGINT; //SIGTERM;//SIGINT;
         sighandler_t sighandler = signal(signum, signal_handler);
         if (SIG_ERR == sighandler) {
-	    dump("fail to signal\n");
-	    ret = -1;
-	    break;
+            dump("fail to signal\n");
+            ret = -1;
+            break;
         }
 
         ret = pthread_create(&ptd, NULL, recv_thread, p_args);
         if (0 != ret) {
             dump("fail to create thread\n");
-	    break;
+            break;
         }
 
         pthread_setname_np(ptd, "recv_packet_thread"); 

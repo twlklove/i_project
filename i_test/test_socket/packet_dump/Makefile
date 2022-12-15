@@ -1,6 +1,6 @@
 target=packet_dump
 
-CFLAGS += 
+CFLAGS += -Wno-address-of-packed-member
 
 all:clean $(target)
 $(target):
@@ -8,4 +8,4 @@ $(target):
 
 .PHONY:clean
 clean:
-	rm -rf $(target)
+	rm -rf $(target) *~

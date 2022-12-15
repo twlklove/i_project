@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 #ifndef dump
-#define dump(a, ...)                printf("%s[%d] mark: " a, __FILE__, __LINE__, ##__VA_ARGS__)
+#define dump(a, ...)            printf("%s[%d] mark: " a, __FILE__, __LINE__, ##__VA_ARGS__)
 #endif
 
 #define DEFAULT_DUMP_LEN   60
