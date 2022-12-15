@@ -1,8 +1,35 @@
-#### version for linux
-The version for linux is in Makefile, such as 5.8.12
-  5: the first number, is a main version number
-  8: the second number, is a sub version number, it's stable. A even number means it's a stable version, and a odd number means it's not a stable version.
-  12: the third number, is the number of modifying it.
+
+1. Linux 的源码仓库主要有下面三个： linux, linux-stable, linux-next
+  1.1 linux仓库: mainline版本，Linus Torvalds 本尊亲自维护
+    官方位置：  https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/
+    github地址：https://github.com/torvalds/linux
+
+    注：
+      只有一个master分支,即mainline,此分支中内核版本号只涉及主版本号和次版本号, 即x.y, 且采用打tag(如:v6.1)的方式进行发布  
+      每个大版本(如v6.1到v6.2之间)的发布周期目前稳定在大致在两个月左右, 期间会发布一些RC版本
+      RC版本：在发布正式版本前，会先发布一系列的候选Release Candidate,简称RC）版本，比如v6.1-rc1，rc值越大越接近最终版本，
+        
+  1.2 linux-stable仓库: 发布的stable版本，Linux社区另一位大佬Greg Kroah-Hartman维护
+    官方位置：https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/
+    github地址是：https://github.com/gregkh/linux
+    
+    注：
+      x.y.z 版本的内核一般都是指stable版本
+      从主干发布的x.y版本pull并checkout一个分支linux-x.y.y, 持续合入patch并定期打上tag发布,如v5.6.1。y从1开始以此递增,表示稳定版的更新序列号
+      注：分支名x.y.y中的x和第1个y为变量，指版本号，第2个y是字母y
+     
+  1.3 linux-next仓库: 存放希望在下一个merge窗口被合入mainline的patch, Stephen Rothwell 维护。
+    官方位置：https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+              git clone git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+    注：
+      Linus一般会在某个正式版本(如v6.1)发布的同时就会为下一个版本(如v6.2)开启一个 merge windows, 大概在两周左右. 
+      在此期间,master分支会从linux-next仓库以及各个子模块的维护者处接收patch并合入master,形成下一个版本的候选版本(如v6.2-rc1).
+
+2. linux version
+  The version for linux is in Makefile, such as 5.8.12
+    5: the first number, is a main version number
+    8: the second number, is a sub version number. A even number means it's a stable version, and a odd number means it's not a stable version.
+    12: the third number, is the number of modifying it.
 
 
 ####systemctl
