@@ -64,4 +64,8 @@ cd -
 ## cJSON
 git clone https://github.com/DaveGamble/cJSON.git
 
-cd -
+# ucOS
+git clone https://github.com/weston-embedded/uC-OS3.git
+
+# FreeRTOS
+git clone https://github.com/FreeRTOS/FreeRTOS.git
