@@ -1,5 +1,5 @@
 # ucOS
-git clone https://github.com/weston-embedded/uC-OS3.git
+git clone https://github.com/weston-embedded/uC-OS3.git -b master
 
-# FreeRTOS
-git clone https://github.com/FreeRTOS/FreeRTOS.git
+# FreeRTOS   
+# git clone https://github.com/FreeRTOS/FreeRTOS.git --recursive -b main
