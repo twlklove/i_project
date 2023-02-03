@@ -1,0 +1,53 @@
+MadWifi 全称是Multiband Atheros Driver for Wifi，使用Atheros系列芯片的802.11a/b/g无线网卡在linux下驱动程序。
+
+iw dev            ：检查wifi设备
+iw wlan0 link  ：检查连接情况
+iw wlan0 scan ： 扫描wifi热点
+#连接到wifi
+1. iw wlan0 connect  wifi热点ssid    #无加密的情况
+2. iw wlan0 connect  wifi热点的SSID key 0:秘钥    #wep加密情况
+3.  # WPA/WPA2加密 
+wpa_passphrase 热点SSID >> /etc/wifi/wpa_supplicant.conf 密码 
+/etc/wifi/wpa_supplicant.conf
+network={
+ssid="你的SSID"
+proto=RSN
+key_mgmt=WPA-PSK
+pairwise=CCMP
+auth_alg=OPEN
+#psk="你的密码"
+}
+#获取ip
+wpa_supplicant -B -i  wlan0 -c /etc/wpa_supplicant/wpa_supplicant.conf
+
+4. #自动获取ip
+dhcpcd wlan0
+
+
+1. ######bzip2 gzip lzma
+2. cat arch/arm64/configs/defconfig  | tail -n1
+#CONFIG_INITRAMFS_SOURCE="_install_arm64"
+CONFIG_INITRAMFS_COMPRESSION_GZIP=y
+# CONFIG_INITRAMFS_COMPRESSION_XZ is not set
+# CONFIG_INITRAMFS_COMPRESSION_NONE is not set
+3. #### addr2line
+root@hello:/home/i_work/qemu# nm linux-5.12.2/vmlinux | grep inet_init
+ffff8000116772c8 t inet_init
+root@hello:/home/i_work/qemu# readelf -a  linux-5.12.2/vmlinux | grep inet_init
+158242: ffff8000116772c8   592 FUNC    LOCAL  DEFAULT   13 inet_init
+root@hello:/home/i_work/qemu# addr2line -a ffff8000116772c8 -e linux-5.12.2/vmlinux
+0xffff8000116772c8
+/home/i_work/qemu/linux-5.12.2/net/ipv4/af_inet.c:1941
+4. /usr/src/linux-headers-5.11.0-25-generic/scripts/extract-ikconfig Image  | grep CONFIG_INITRAM
+5. apt install u-boot-tools
+mkimage
+od hello -t x2 -A x --endian=little
+strings Image
+6. 镜像解压
+od -t x1 -A d Image | grep "1f 8b 08"    #gzip压缩头
+dd if=Image bs=1 skip=24383768 | zcat > h2.txt
+7. 
+aarch64-linux-gnu-objcopy -O binary -S -g  vmlinux
+aarch64-linux-gnu-objcopy -O binary -S -R .reginfo -R .mdebug -R .comment -R .note -R .pdr -R .options -R .arm64.options vmlinux
+aarch64-linux-gnu-strip -O binary -s vmlinux
+aarch64-linux-gnu-objcopy -O binary --remove-section=.reginfo  vmlinux   <==> Image

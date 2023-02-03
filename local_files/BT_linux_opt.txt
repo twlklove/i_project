@@ -1,0 +1,8 @@
+蓝牙
+hciconfig     #或hcitool dev
+hciconfig hci0 up
+hcitool scan
+rfcomm bind /dev/rfcomm0 E0:A6:70:8C:A3:02
+cat >/dev/rfcomm0
+
+sudo rfcomm release /dev/rfcomm0
