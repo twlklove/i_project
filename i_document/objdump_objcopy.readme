@@ -1,0 +1,7 @@
+build_dir=build
+src_file = ${build_dir}/RTOSDemo.axf
+target_file = ${build_dir}/test.bin
+
+arm-none-eabi-objdump -dDSxg ${src_file}
+arm-none-eabi-objcopy -O binary -R .note -R .comment -S ${src_file} {target_file}  # convert axf to bin
+
