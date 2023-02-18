@@ -1,0 +1,38 @@
+#https://www.qemu.org/
+
+install_cmd="apt-get install"
+${install_cmd} gcc-aarch64-linux-gnu
+
+### install
+# version is too old
+# ${install_cmd}  qemu-system-arm
+
+#wget https://download.qemu.org/qemu-7.2.0.tar.xz
+#tar xvJf qemu-7.2.0.tar.xz
+#cd qemu-7.2.0
+#./configure
+#make
+
+git clone https://gitlab.com/qemu-project/qemu.git
+cd qemu
+git submodule init
+git submodule update --recursive
+#./configure --help|less
+#./configure
+#apt-get install ninja-build
+./configure --target-list=arm-softmmu,aarch64-softmmu --enable-debug --enable-sdl
+make
+make install
+
+## 运行
+qemu-system-aarch64 -M raspi3 -kernel xx.elf -serial null -serial stdio
+
+### 调试
+#-S 表示guest虚拟机一启动就会暂停
+#-s 表示监听tcp:1234端口等待GDB的连接
+qemu-system-aarch64 -M raspi3 -kernel rtthread.elf -serial null -serial stdio -s -S
+aarch64-elf-gdb
+target remote localhost:1234连接
+file raspberry-pi/src/rt-thread/bsp/raspi3-64/rtthread.elf   #打开调试文件
+layout src  # 查看源码 
+#start gdb 调试
