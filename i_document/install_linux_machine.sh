@@ -1,3 +1,10 @@
+#sudo passwd root
+#su root
+#/etc/sshd_config PermitRootxx 
+apt install -y net-tools
+apt install -y sshd
+apt install -y vim
+
 apt install -y gcc
 apt install -y g++
 apt install -y cmake
