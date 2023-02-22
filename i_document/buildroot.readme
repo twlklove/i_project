@@ -1,0 +1,10 @@
+# del is ctrl + backspace
+# config        is dir for config file of xx_borad
+# dl            is dir for packages downloaded
+# output/build/ is dir for installing
+
+#config
+make ARCH=aarch64 CROSS_COMPILE=aarch64-linux-gnu-  menuconfig
+
+#compile
+make ARCH=aarch64 CROSS_COMPILE=aarch64-linux-gnu-    # default is .config, or specify xx.config

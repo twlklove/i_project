@@ -1,6 +1,7 @@
 #sudo passwd root
 #su root
 #/etc/sshd_config PermitRootxx 
+#apt remove xx
 apt install -y net-tools
 apt install -y sshd
 apt install -y vim
@@ -12,7 +13,9 @@ apt install -y build-essential autoconf libtool pkg-config
 apt install -y libssl-dev
 apt install -y valgrind
 
+apt install -y libncurses-dev
 apt install -y python3-pip
+
 pip3 install numpy
 pip3 install pandas
 pip3 install matplotlib
