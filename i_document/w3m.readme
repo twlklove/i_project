@@ -1,0 +1,8 @@
+/ : find
+u : show url
+a : go to url
+
+ctrl + c :取消open url
+U : open and input url
+q : exit
+!xx : do shell cmd
