@@ -12,7 +12,7 @@ then
 fi
 
 rootfs_file="../rootfs/rootfs_ext4.img"
-if [ -f ${rootfs_file} ]
+if [ -f ${rootfs_file} ] # start not using embedding
 then
     echo "use rootfs"
     qemu-system-aarch64 -machine virt -cpu cortex-a57 -machine type=virt -m 1024 -smp 4 -kernel arch/arm64/boot/Image \
@@ -21,7 +21,7 @@ then
     	--fsdev local,id=kmod_dev,path=$PWD/kmodules,security_model=none \
     	-device virtio-9p-device,fsdev=kmod_dev,mount_tag=kmod_mount -S -s
 
-else   
+else #start using embedding in initramfs
     qemu-system-aarch64 -machine virt -cpu cortex-a57 -machine type=virt -m 1024 -smp 4 -kernel arch/arm64/boot/Image \
     	--append "rdinit=/linuxrc root=/dev/vda rw console=ttyAMA0 loglevel=8" -nographic \
     	--fsdev local,id=kmod_dev,path=$PWD/kmodules,security_model=none \
