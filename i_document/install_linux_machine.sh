@@ -2,6 +2,8 @@
 #su root
 #/etc/sshd_config PermitRootxx 
 #apt remove xx
+#apt-cache search xx
+
 apt install -y net-tools
 apt install -y sshd
 apt install -y vim
@@ -12,6 +14,8 @@ apt install -y cmake
 apt install -y build-essential autoconf libtool pkg-config
 apt install -y libssl-dev
 apt install -y libncurses-dev
+apt install -y libncurses5
+apt install -y libpython2.7
 apt install -y valgrind 
 
 apt install -y w3m w3m-img  #brower
