@@ -4,6 +4,9 @@
 #apt remove xx
 #apt-cache search xx
 
+apt install -y linux-source
+apt install -y linux-headers-$(uname -r)
+
 apt install -y net-tools
 apt install -y sshd
 apt install -y vim
