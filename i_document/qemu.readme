@@ -1,7 +1,11 @@
 #https://www.qemu.org/
 
 ## 运行
-#qemu-system-aarch64 -M raspi3 -kernel xx.elf -serial null -serial stdio
+#config_param= 
+#qemu-system-aarch64 -M virt -cpu cortex-a57 -m 1G -nographic -kernel output/images/Image -append "root=/dev/vda" -hda output/images/rootfs.ext4 
+
+#qemu-system-aarch64 -M raspi3 -kernel xx.elf -serial null -serial stdio 
+
 
 ### 调试
 #-S 表示guest虚拟机一启动就会暂停
@@ -12,3 +16,15 @@ target remote localhost:1234连接
 file raspberry-pi/src/rt-thread/bsp/raspi3-64/rtthread.elf   #打开调试文件
 layout src  # 查看源码 
 #start gdb 调试
+#
+#
+
+#for uboot
+#download and compile uboot
+#qemu-system-aarch64 -machine virt -cpu cortex-a57 -bios output/images/u-boot.bin -nographic
+#
+#start from flash
+#dd if=/dev/zero of=flash.bin bs=4096 count=16384
+#dd if=output/images/u-boot.bin of=flash.bin conv=notrunc bs=4096
+#qemu-system-aarch64 -machine virt -cpu cortex-a57 -m 1G -drive file=flash.bin,format=raw,if=pflash -nographic
+#
