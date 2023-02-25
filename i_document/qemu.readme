@@ -4,6 +4,9 @@
 #config_param= 
 #qemu-system-aarch64 -M virt -cpu cortex-a57 -m 1G -nographic -kernel output/images/Image -hda output/images/rootfs.ext4 -append "root=/dev/vda"
 
+#for embeded system, use initramfs; initramfs is included into Image;
+#qemu-system-aarch64 -M virt -cpu cortex-a57 -m 1G -nographic -kernel output/images/Image  --append "rdinit=/linuxrc" -nographic
+#
 #qemu-system-aarch64 -M raspi3 -kernel xx.elf -serial null -serial stdio 
 
 

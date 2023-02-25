@@ -3,6 +3,11 @@
 # dl            is dir for packages downloaded
 # output/build/ is dir for installing
 
+# if use initramfs, then config linux in file board/qemu/aarch64-virt/linux.config
+#CONFIG_INITRAMFS_SOURCE="/path/to/buildroot/output/images/rootfs.cpio"
+#CONFIG_INITRAMFS_COMPRESSION_GZIP=y 
+#CONFIG_DEVTMPFS=y
+
 #config
 make ARCH=aarch64 CROSS_COMPILE=aarch64-linux-gnu-  menuconfig
 
