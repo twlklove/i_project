@@ -1,0 +1,29 @@
+
+#/sbin/init -> /lib/systemd/systemd
+
+systemctl enable rc-local
+
+#in /etc/systemd/system/rc-local.service, add content:
+    #[Unit]
+    #Description=/etc/rc.local Compatibility
+    #ConditionPathExists=/etc/rc.local
+    #
+    #[Service]
+    #Type=forking
+    #ExecStart=/etc/rc.local start
+    #TimeoutSec=0
+    #StandardOutput=tty
+    #RemainAfterExit=yes
+    #SysVStartPriority=99
+    #
+    #[Install]
+    #WantedBy=multi-user.target
+
+
+printf '%s\n' '#!/bin/bash' 'exit 0' | sudo tee -a /etc/rc.local
+chmod +x /etc/rc.local
+
+systemctl  start   rc-local
+systemctl  status  rc-local
+
+#systemctl stop   rc-local
