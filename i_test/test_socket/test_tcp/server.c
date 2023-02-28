@@ -45,7 +45,7 @@ void open_server(int argc, char *argv[])
          return;
     }
 
-    int fd = socket(AF_INET6, SOCK_STREAM, 0);
+    int fd = socket(ip_addr.sin6_family, SOCK_STREAM, 0);
     if (-1 == fd) {
         perror("socket");
         close(epfd);

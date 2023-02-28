@@ -1,6 +1,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <stdio.h>
+#include <netinet/tcp.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -18,45 +19,7 @@ int main(int argc, char *argv[])
     if (argc > 1) {
         ip = argv[1];
     }
-#if 1
-    struct sockaddr_in ip_addr = {0};
-    memset(&ip_addr, 0, sizeof(ip_addr));
-    int  len = sizeof(ip_addr);
-    char *buf = (char*)(&ip_addr.sin_addr);
 
-    ip_addr.sin_family = AF_INET;
-    ip_addr.sin_port = htons(MYPORT);
-
-    if (1 != inet_pton(AF_INET, ip, buf)) {
-        printf("ip format is not right\n");
-        return -1;
-    }
-    
-    int fd = socket(ip_addr.sin_family, SOCK_STREAM, 0);
-    if (-1 == fd) {
-        perror("socket");
-        exit(1);
-    }
-
-    struct sockaddr_in local_addr = {0};
-    memset(&local_addr, 0, sizeof(local_addr));
-    local_addr.sin_family = AF_INET;
-    local_addr.sin_port = htons(0);
-    local_addr.sin_port = htonl(INADDR_ANY);
-    if (bind(fd, (struct sockaddr *)&local_addr, len) < 0)
-    {
-        perror("bind");
-        exit(1);
-    }
-
-    
-    if (connect(fd, (struct sockaddr *)&ip_addr, len) < 0)
-    {
-        perror("connect");
-        exit(1);
-    }
-#endif
-#if 0
     struct sockaddr_in6 ip_addr = {0};
     memset(&ip_addr, 0, sizeof(ip_addr));
     int  len = sizeof(ip_addr);
@@ -79,12 +42,37 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    int opt_value = 1;
+    int ret = setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt_value, sizeof(opt_value));
+    if (ret < 0) {
+        printf("error: ret is %d\n", ret);
+    }
+
+    ret = setsockopt(fd, SOL_TCP, TCP_NODELAY, &opt_value, sizeof(opt_value));
+    if (ret < 0) {
+        printf("error: ret is %d\n", ret);
+    }
+
+    //opt_value = xx; // must be in 88-32677, default is 536 for ipv4
+    //ret = setsockopt(fd, SOL_TCP, TCP_MAXSEG, &opt_value, sizeof(opt_value));
+
+    struct sockaddr_in6 local_addr = {0};
+    memset(&local_addr, 0, sizeof(local_addr));
+    local_addr.sin6_family = AF_INET;
+    local_addr.sin6_port = htons(0);
+    local_addr.sin6_port = htonl(INADDR_ANY);
+    if (bind(fd, (struct sockaddr *)&local_addr, len) < 0)
+    {
+        perror("bind");
+        exit(1);
+    }
+
     if (connect(fd, (struct sockaddr *)&ip_addr, len) < 0)
     {
         perror("connect");
         exit(1);
     }
-#endif
+
     char sendbuf[BUFFER_SIZE];
     char recvbuf[BUFFER_SIZE];
     while (fgets(sendbuf, sizeof(sendbuf), stdin) != NULL)
