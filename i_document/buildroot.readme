@@ -20,4 +20,6 @@ make ARCH=aarch64 CROSS_COMPILE=aarch64-linux-gnu-  menuconfig
 make ARCH=aarch64 CROSS_COMPILE=aarch64-linux-gnu-    # default is .config, or specify xx.config
 
 
-
+#output/build/linux-custom/vmlinux
+#output/images/Image 
+#output/images/rootfs.ext4
