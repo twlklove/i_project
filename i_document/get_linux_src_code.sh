@@ -68,4 +68,7 @@ git clone https://github.com/DaveGamble/cJSON.git
 git clone https://github.com/weston-embedded/uC-OS3.git
 
 # FreeRTOS
-git clone https://github.com/FreeRTOS/FreeRTOS.git
+ git clone https://github.com/FreeRTOS/FreeRTOS.git --recurse-submodules
+#git clone https://github.com/FreeRTOS/FreeRTOS.git
+#git submodule update --init --recursive
+
