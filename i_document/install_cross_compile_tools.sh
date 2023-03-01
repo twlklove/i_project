@@ -1,6 +1,7 @@
 # apt install 
-#apt install  gcc-aarch64-linux-gnu
-#apt insgtall gcc-arm-linux-gnueabi
+#apt install -y gcc-aarch64-linux-gnu
+#apt install -y gcc-arm-linux-gnueabi
+#apt install -y gcc-arm-none-eabi
 
 # install by src code
 code_dir=../../i_opensource
