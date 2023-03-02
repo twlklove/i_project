@@ -12,8 +12,8 @@
 #for freertos
 #cd FreeRTOS/FreeRTOS/Demo/CORTEX_M3_MPS2_QEMU_GCC
 #change heap and stack size in scripts/mps2_m3.ld
-#qemu-system-arm -M mps2-an385 -monitor null -semihosting --semihosting-config enable=on,target=native -kernel ./build/RTOSDemo.axf -serial stdio -nographic
-#qemu-system-arm -M mps2-an385 -monitor null -semihosting --semihosting-config enable=on,target=native -kernel ./build/run.bin -serial stdio -nographic
+#qemu-system-arm -M mps2-an385 -monitor null -semihosting --semihosting-config enable=on,target=native -serial stdio -nographic -kernel ./build/RTOSDemo.axf
+#qemu-system-arm -M mps2-an385 -monitor null -semihosting --semihosting-config enable=on,target=native -serial stdio -nographic -kernel ./build/run.bin -cpu cortex-m3 -m 16M -smp 1 -net nic -net tap
 
 
 ### 调试
