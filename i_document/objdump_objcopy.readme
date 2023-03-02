@@ -2,8 +2,10 @@ build_dir=build
 src_file=${build_dir}/RTOSDemo.axf   #execute file, such as vmlinux
 target_file=${build_dir}/test.bin    #bin file for machine run, such as Image 
 
+arm-none-eabi-objcopy -O binary -R .note -R .comment -S ${src_file} ${target_file}  # convert axf or elf to bin
+
 arm-none-eabi-objdump -dDSxg ${src_file}
-arm-none-eabi-objcopy -O binary -R .note -R .comment -S ${src_file} {target_file}  # convert axf or elf to bin
+
 
 #i_Image is out/images/Image  #md5sum is the same
 #aarch64-linux-gnu-objcopy -O binary -R .note -R .comment -S output/build/linux-custom/vmlinux i_Image
