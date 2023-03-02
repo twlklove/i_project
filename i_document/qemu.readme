@@ -12,6 +12,8 @@
 #for freertos
 #cd FreeRTOS/FreeRTOS/Demo/CORTEX_M3_MPS2_QEMU_GCC]
 #qemu-system-arm -M mps2-an385 -monitor null -semihosting --semihosting-config enable=on,target=native -kernel ./build/RTOSDemo.axf -serial stdio -nographic
+#qemu-system-arm -M mps2-an385 -monitor null -semihosting --semihosting-config enable=on,target=native -kernel ./build/run.bin -serial stdio -nographic
+
 
 ### 调试
 #-S 表示guest虚拟机一启动就会暂停
