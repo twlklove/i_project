@@ -10,7 +10,8 @@
 #qemu-system-aarch64 -M raspi3 -kernel xx.elf -serial null -serial stdio 
 
 #for freertos
-#cd FreeRTOS/FreeRTOS/Demo/CORTEX_M3_MPS2_QEMU_GCC]
+#cd FreeRTOS/FreeRTOS/Demo/CORTEX_M3_MPS2_QEMU_GCC
+#change heap and stack size in scripts/mps2_m3.ld
 #qemu-system-arm -M mps2-an385 -monitor null -semihosting --semihosting-config enable=on,target=native -kernel ./build/RTOSDemo.axf -serial stdio -nographic
 #qemu-system-arm -M mps2-an385 -monitor null -semihosting --semihosting-config enable=on,target=native -kernel ./build/run.bin -serial stdio -nographic
 

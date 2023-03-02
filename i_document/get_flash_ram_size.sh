@@ -9,7 +9,8 @@ elf_file=${build_dir}/RTOSDemo.axf    #execute elf file, such as vmlinux
 ####
 target_file=${build_dir}/run.bin    #bin file for machine run, such as Image
 arm-none-eabi-objcopy -O binary -R .note -R .comment -S ${elf_file} ${target_file}  # convert axf or elf to bin
-ls ${build_dir}/* -l 
+ls ${build_dir} -l 
+echo
 
 #####################
 #Flash: .isr_vector|.text|.data|.uninitialized|.comment|.ARM.attributes|.debug_*|..symtab|.strtab|.shstrtab 
