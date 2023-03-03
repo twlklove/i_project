@@ -1,0 +1,6 @@
+kill -l        # look at signals
+man 7 signal   # look at action for signal
+
+#这4个信号是不能被捕获的 9-SIGKILL  19-SIGSTOP  31  32 
+#
+
