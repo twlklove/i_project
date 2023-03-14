@@ -27,13 +27,49 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdarg.h>
 
-void myprintf(const char *format,...) __attribute__((format(printf,1,2)));
+#define __printf(a, b) __attribute__((format(printf, a, b))) // be defined in include/linux/compiler_attributes.h  
+
+static __printf(1, 2)
+void myprintf(const char *fmt,...) 
+{
+    va_list args;
+    va_start(args, fmt);
+
+#ifdef DEBUG
+    va_list ap;
+    va_copy(ap, args);
+    
+    while (*fmt) {
+        switch (*fmt++) {
+        case 's':              /* string */
+            char *s = va_arg(ap, char *);
+            printf("string %s\n", s);
+            break;
+        case 'd':              /* int */
+            int d = va_arg(ap, int);
+            printf("int %d\n", d);
+            break;
+        case 'c':              /* char */
+            /* need a cast here since va_arg only
+               takes fully promoted types */
+            char c = (char) va_arg(ap, int);
+            printf("char %c\n", c);
+            break;
+        }
+    }
+    va_end(ap);
+#else
+    vdprintf(1, fmt, args);  //man vdprintf
+    va_end(args);
+#endif
+}
 
 void main()
 {
-      myprintf("i=%d\n",6);
-      myprintf("i=%s\n",6);
-      myprintf("i=%s\n","abc");
-      myprintf("%s,%d,%d\n",1,2);
+    myprintf("i=%d, %d\n", 6, 7);
+    //myprintf("i=%s\n",6);
+    //myprintf("i=%s\n","abc");
+    //myprintf("%s,%d,%d\n",1,2);
 }
