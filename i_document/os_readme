@@ -1,3 +1,11 @@
+#linux
+#1. Linux From Scratch (LFS) is a project that provides you with step-by-step instructions for building your own custom Linux system, entirely from source code.
+https://www.linuxfromscratch.org/
+2.
+https://www.kernel.org/doc/html/v5.18/translations/zh_CN/core-api/kernel-api.html
+https://blog.csdn.net/tan_000/article/details/78905134
+http://www.wowotech.net/device_model/dt-code-file-struct-parse.html
+
 # ucOS
 git clone https://github.com/weston-embedded/uC-OS3.git -b master
 
