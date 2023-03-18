@@ -1,0 +1,75 @@
+1. Device Tree简介
+设备树就是描述单板资源以及设备的一种文本文件。本篇文章主要是更深层次的探讨设备文件的构成以及kernel解析设备树的原理。所以，本篇内容并不是针对没任何设备树知识的读者。本篇文章主要针对已经使用过设备树或者对设备已经有所了解并想深层次的探究设备树的文件结构和kernel解析过程的读者。
+2. Device Tree编译
+Device Tree文件的格式为dts，包含的头文件格式为dtsi，dts文件是一种人可以看懂的编码格式。但是uboot和linux不能直接识别，他们只能识别二进制文件，所以需要把dts文件编译成dtb文件。dtb文件是一种可以被kernel和uboot识别的二进制文件。把dts编译成dtb文件的工具是dtc。Linux源码目录下scripts/dtc目录包含dtc工具的源码。在Linux的scripts/dtc目录下除了提供dtc工具外，也可以自己安装dtc工具，linux下执行：sudo apt-get install device-tree-compiler安装dtc工具。dtc工具的使用方法是：dtc –I dts –O dtb –o xxx.dtb xxx.dts，即可生成dts文件对应的dtb文件了。 当然了，dtc –I dtb –O dts –o xxx.dts xxx.dtb反过来即可生成dts文件。其中还提供了一个fdtdump的工具，可以dump dtb文件,方便查看信息。
+
+3. arm linux 上查看设备树配置情况
+  ls /sys/firmware/devicetree/
+
+4. linux kernel处理
+  Device Tree文件结构描述就以上struct fdt_header、struct fdt_node_header及struct fdt_property三个结构体描述。kernel会根据Device Tree的结构解析出kernel能够使用的struct property结构体。kernel根据Device Tree中所有的属性解析出数据填充struct property结构体。struct property结构体描述如下：
+
+    struct property {
+    	char *name;                          /* property full name */
+    	int length;                          /* property value length */
+    	void *value;                         /* property value */
+    	struct property *next;             /* next property under the same node */
+    	unsigned long _flags;
+    	unsigned int unique_id;
+    	struct bin_attribute attr;        /* 属性文件，与sysfs文件系统挂接 */
+    };
+    总的来说，kernel根据Device Tree的文件结构信息转换成struct property结构体，并将同一个node节点下面的所有属性通过property.next指针进行链接，形成一个单链表。
+    kernel中究竟是如何解析Device Tree的呢？下面分析函数解析过程。函数调用过程如下图所示。kernel的C语言阶段的入口函数是init/main.c/stsrt_kernel()函数，在early_init_dt_scan_nodes()中会做以下三件事：
+    
+    (1) 扫描/chosen或者/chose@0节点下面的bootargs属性值到boot_command_line，此外，还处理initrd相关的property，并保存在initrd_start和initrd_end这两个全局变量中；
+    (2) 扫描根节点下面，获取{size,address}-cells信息，并保存在dt_root_size_cells和dt_root_addr_cells全局变量中；
+    (3) 扫描具有device_type = “memory”属性的/memory或者/memory@0节点下面的reg属性值，并把相关信息保存在meminfo中，全局变量meminfo保存了系统内存相关的信息。
+    
+    Device Tree中的每一个node节点经过kernel处理都会生成一个struct device_node的结构体
+
+4. Device Tree头信息
+fdtdump工具使用，Linux终端执行ftddump –h，输出以下信息：
+
+fdtdump -h
+Usage: fdtdump [options] <file>
+Options: -[dshV]
+  -d, --debug   Dump debug information while decoding the file
+  -s, --scan    Scan for an embedded fdt in file
+  -h, --help    Print this help and exit
+  -V, --version Print version and exit
+
+本文采用s5pv21_smc.dtb文件为例说明fdtdump工具的使用。Linux终端执行fdtdump –sd s5pv21_smc.dtb > s5pv21_smc.txt，打开s5pv21_smc.txt文件，部分输出信息如下所示：
+
+// magic:  0xd00dfeed
+// totalsize:  0xce4 (3300)
+// off_dt_struct: 0x38
+// off_dt_strings: 0xc34
+// off_mem_rsvmap: 0x28
+// version: 17
+// last_comp_version: 16
+// boot_cpuid_phys: 0x0
+// size_dt_strings: 0xb0
+// size_dt_struct: 0xbfc
+
+以上信息便是Device Tree文件头信息，存储在dtb文件的开头部分。在Linux内核中使用struct fdt_header结构体描述。struct fdt_header结构体定义在scripts\dtc\libfdt\fdt.h文件中。
+
+struct fdt_header {
+	fdt32_t magic;			     /* magic word FDT_MAGIC */
+	fdt32_t totalsize;		     /* total size of DT block */
+	fdt32_t off_dt_struct;		 /* offset to structure */
+	fdt32_t off_dt_strings;		 /* offset to strings */
+	fdt32_t off_mem_rsvmap;		 /* offset to memory reserve map */
+	fdt32_t version;		         /* format version */
+	fdt32_t last_comp_version;	 /* last compatible version */
+ 
+	/* version 2 fields below */
+	fdt32_t boot_cpuid_phys;	 /* Which physical CPU id we're booting on */
+	/* version 3 fields below */
+	fdt32_t size_dt_strings;	 /* size of the strings block */
+ 
+	/* version 17 fields below */
+	fdt32_t size_dt_struct;		 /* size of the structure block */
+};
+fdtdump工具的输出信息即是以上结构中每一个成员的值，struct fdt_header结构体包含了Device Tree的私有信息。例如: fdt_header.magic是fdt的魔数,固定值为0xd00dfeed，fdt_header.totalsize是fdt文件的大小。使用二进制工具打开s5pv21_smc.dtb验证。s5pv21_smc.dtb二进制文件头信息如下图所示。从下图中可以得到Device Tree的文件是以大端模式储存。并且，头部信息和fdtdump的输出信息一致。
+
+
