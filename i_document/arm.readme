@@ -1,3 +1,5 @@
+##在嵌入式系统中uboot+DT，而服务器领域的UEFI+ACPI也将是ARM服务器的必然选择
+
 https://developer.arm.com/documentation/den0024/a
 https://www.st.com/en/microcontrollers-microprocessors/stm32h745-755.html
 https://wiki.st.com/stm32mpu/wiki/Linux_RPMsg_framework_overview
