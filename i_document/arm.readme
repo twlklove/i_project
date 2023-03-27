@@ -43,8 +43,15 @@ v8在v7的基础上做了很大的改动：
         有2个累加寄存器CNTPCT_EL0、CNTVCT_EL0，分别用于Physical 和Virtual定时器，在CPU运行时累加寄存器会一直累加，寄存器是64位的，就算是10Ghz的主频来说可以运行57.4年，理论是够用的
 
 Note: 
-1. set sys timer in uboot
-    1.1 for armv8, use CNTFRQ_EL0
+1. Generic timer for armv7 and armv8, 包含：共享的System Counter、各个Processor专有的Timer
+   1.1 System Counter：给所有Processor提供统一的时间
+      a system timer/counter:provides a uniform view of system time,only counter,no interrput,in an always-on power domain,such as STGEN of stm32
+   1.2 Timer：可以设置周期性的事件，给Processor提供中断信号
+      generic timers: generation of timer events as interrupt outputs
+                   generation of event streams
+   
+2. system timer alway be set in uboot
+    2.1 for armv8, use CNTFRQ_EL0
     u-boot/arch/arm/cpu/armv8/start.S : 144 
         #if CONFIG_COUNTER_FREQUENCY
             branch_if_not_highest_el x0, 4f
@@ -52,7 +59,7 @@ Note:
             msr cntfrq_el0, x0          /* Initialize CNTFRQ */
         #endif
 
-    1.2 for armv7: use CNTFRQ or P15
+    2.2 for armv7: use CNTFRQ or P15
     u-boot/arch/arm/cpu/armv7/nonsec_virt.S : 192
         #if CONFIG_COUNTER_FREQUENCY
             mrc p15, 0, r0, c0, c1, 1       @ read ID_PFR1
@@ -62,9 +69,9 @@ Note:
             mcreq   p15, 0, r1, c14, c0, 0      @ write CNTFRQ
         #endif
 #
-    1.3 for stm32mp175
+    2.3 for stm32mp175
     u-boot/drivers/clk/stm32/clk-stm32mp1.c : 1786 stgen_config(...)
          writel(rate, stgenc + STGENC_CNTFID0);
          __asm__ volatile("mcr p15, 0, %0, c14, c0, 0" : : "r" (rate));
- 
+    #STGEN : System timer generator 
 #####################################################################
