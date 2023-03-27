@@ -42,7 +42,7 @@ v8在v7的基础上做了很大的改动：
         所有定时器都使用同一个时钟源——系统时钟，一般CNTFRQ_EL0寄存器中会保存定时器的频率
         有2个累加寄存器CNTPCT_EL0、CNTVCT_EL0，分别用于Physical 和Virtual定时器，在CPU运行时累加寄存器会一直累加，寄存器是64位的，就算是10Ghz的主频来说可以运行57.4年，理论是够用的
 
-Note: 
+Note: D5 or B8 in armv7 Reference Manual and generic timer in stm32mp157 
 1. Generic timer for armv7 and armv8, 包含：共享的System Counter、各个Processor专有的Timer
    1.1 System Counter：给所有Processor提供统一的时间
       a system timer/counter:provides a uniform view of system time,only counter,no interrput,in an always-on power domain,such as STGEN of stm32
@@ -70,8 +70,17 @@ Note:
         #endif
 #
     2.3 for stm32mp175
+    # CNTCR.FCREQ: Frequency change request. Indicates the number of the entry in the frequency table to select
+    # The value of the CNTCR.FCREQ field specifies which frequency modes table entry specifies the system counter update frequency.
+    # Changing the value of CNTCR.FCREQ requests a change to the system counter update frequency.
+
+    # CNTFRQ: register indicates the clock frequency of the system counter, Programming CNTFRQ does not affect the system clock frequency. However, on system initialization, CNTFRQ must be correctly programmed with the system clock frequency, to make this value available to software
+
     u-boot/drivers/clk/stm32/clk-stm32mp1.c : 1786 stgen_config(...)
-         writel(rate, stgenc + STGENC_CNTFID0);
-         __asm__ volatile("mcr p15, 0, %0, c14, c0, 0" : : "r" (rate));
+        clrbits_le32(stgenc + STGENC_CNTCR, STGENC_CNTCR_EN);
+        writel(rate, stgenc + STGENC_CNTFID0);                          # write CNTFID0(as is frequency modes table entry 0)
+        setbits_le32(stgenc + STGENC_CNTCR, STGENC_CNTCR_EN);
+
+        __asm__ volatile("mcr p15, 0, %0, c14, c0, 0" : : "r" (rate));  # write CNTFRQ
     #STGEN : System timer generator 
 #####################################################################
