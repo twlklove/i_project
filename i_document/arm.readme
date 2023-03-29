@@ -49,8 +49,13 @@ Note: D5 or B8 in armv7 Reference Manual and generic timer in stm32mp157
    1.2 Timer：可以设置周期性的事件，给Processor提供中断信号
       generic timers: generation of timer events as interrupt outputs
                    generation of event streams
-   
-2. system timer alway be set in uboot
+
+   1.3 arch_timer_rate这个全局变量用来保存system counter的输入频率，基本上，这个数据有两个可能的来源：arch_timer_of_configure_rate() in linux
+        （a）device tree node中的clock-frequency属性
+        （b）寄存器CNTFRQ
+      优先从clock-frequency属性中获取该数据，如果device node中没有定义该属性，那么使用CNTFRQ寄存器中的数据
+
+2. uboot中对system timer/counter的CNTFID0和CNTFRQ设置
     2.1 for armv8, use CNTFRQ_EL0
     u-boot/arch/arm/cpu/armv8/start.S : 144 
         #if CONFIG_COUNTER_FREQUENCY
@@ -78,7 +83,7 @@ Note: D5 or B8 in armv7 Reference Manual and generic timer in stm32mp157
 
     u-boot/drivers/clk/stm32/clk-stm32mp1.c : 1786 stgen_config(...)
         clrbits_le32(stgenc + STGENC_CNTCR, STGENC_CNTCR_EN);
-        writel(rate, stgenc + STGENC_CNTFID0);                          # write CNTFID0(as is frequency modes table entry 0)
+        writel(rate, stgenc + STGENC_CNTFID0);  # write CNTFID0(as is frequency modes table entry 0), rate comes from HSE or PLL or others
         setbits_le32(stgenc + STGENC_CNTCR, STGENC_CNTCR_EN);
 
         __asm__ volatile("mcr p15, 0, %0, c14, c0, 0" : : "r" (rate));  # write CNTFRQ
