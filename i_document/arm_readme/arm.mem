@@ -1,12 +1,80 @@
-虚拟地址到物理地址的映射通过查表的机制来实现，ARMv8中:
-1. Kernel Space的页表基地址存放在TTBR1_EL1寄存器中，User Space页表基地址存放在TTBR0_EL0寄存器中，
-  其中高16位用于区分内核空间和用户空间,内核地址空间的高位为全1，(0xFFFF0000_00000000 ~ 0xFFFFFFFF_FFFFFFFF)，
-                                     用户地址空间的高位为全0，(0x00000000_00000000 ~ 0x0000FFFF_FFFFFFFF)
-2. 虚拟地址支持
-64位虚拟地址中，并不是所有位都用上，除了高16位用于区分内核空间和用户空间外，有效位的配置可以是：36, 39, 42, 47,这决定Linux内核中地址空间的大小,
-  比如内核中有效位配置为CONFIG_ARM64_VA_BITS=39，用户空间地址范围：0x00000000_00000000 ~ 0x0000007f_ffffffff，大小为512G，
-                                               内核空间地址范围：0xffffff80_00000000 ~ 0xffffffff_ffffffff，大小为512G。
-3. 页面大小支持
-  支持3种页面大小：4KB, 16KB, 64KB。
-4. 页表支持
-  支持至少两级页表，至多四级页表，Level 0 ~ Level 3。
+1. 虚拟地址到物理地址的映射通过查表的机制来实现，ARMv8中:
+  1.1 Kernel Space的页表基地址存放在TTBR1_EL1寄存器中，User Space页表基地址存放在TTBR0_EL0寄存器中，
+    其中高16位用于区分内核空间和用户空间,内核地址空间的高位为全1，(0xFFFF0000_00000000 ~ 0xFFFFFFFF_FFFFFFFF)，
+                                       用户地址空间的高位为全0，(0x00000000_00000000 ~ 0x0000FFFF_FFFFFFFF)
+  1.2 虚拟地址支持
+  64位虚拟地址中，并不是所有位都用上，除了高16位用于区分内核空间和用户空间外，有效位的配置可以是：36, 39, 42, 47,这决定Linux内核中地址空间的大小,
+    比如内核中有效位配置为CONFIG_ARM64_VA_BITS=39，用户空间地址范围：0x00000000_00000000 ~ 0x0000007f_ffffffff，大小为512G，
+                                                 内核空间地址范围：0xffffff80_00000000 ~ 0xffffffff_ffffffff，大小为512G。
+  1.3. 页面大小支持
+    支持3种页面大小：4KB, 16KB, 64KB。
+  1.4. 页表支持
+    支持至少两级页表，至多四级页表，Level 0 ~ Level 3。
+
+2. for vmlinux 
+  2.1 first cmd is 91005a4d, as flow:
+    00010000: 4d5a 0091 ff3f 2114 0000 0000 0000 0000  MZ...?!.........
+    00010010: 0000 aa00 0000 0000 0a00 0000 0000 0000  ................
+    00010020: 0000 0000 0000 0000 0000 0000 0000 0000  ................
+    00010030: 0000 0000 0000 0000 4152 4d64 4000 0000  ........ARMd@...
+
+  2.2 aarch64-linux-gnu-objdump -S output/build/linux-custom/vmlinux > assembly_file
+    first cmd in assembly_file is => ffffffc010000000:       91005a4d        add     x13, x18, #0x16
+
+  2.3 head.s -------------------------> efi-header.s ---------------->entry.s
+       |                                                                 | 
+    b start_kernel //init/main.c                                 .pushsection ".entry.text", "ax"
+                                                                  .align 11                //2^11=2048B
+                                                                  SYM_CODE_START(vectors)  //16 items * 2^7, as is interrupt vectors
+                                                                      kernel_ventry 1 sync
+                                                                      kernel_ventry 1 irq
+                                                                      ... 
+                                                                      kernel_ventry 0 sync
+                                                                      kernel_ventry 0 irq
+                                                                      ...
+                                                                  SYM_CODE_END(vectors)
+
+                                                                  .macro kernel_ventry, el, label, regsize=64
+                                                                  .align 7                 //2^7=128B=0x80
+                                                                      ...
+                                                                      b el\()\el\()_\label          //b el1_sync/el0_irq/and so on
+                                                                  .endm
+
+                                                                  .macro kernel_entry, el, label, regsize=64
+                                                                       stp x0,  x1, [sp, #16 * 0]
+                                                                       ...
+                                                                       stp x28, x29 [sp, #16 * 14]
+                                                                       ...
+                                                                  .endm
+
+                                                                  .align 6
+                                                                  SYM_CODE_START_LOCAL_NOALIGN(el1_sync)
+                                                                      kernel_entry 1
+                                                                      ...
+                                                                      bl el1_sync_handler           //arch/arm64/kernel/entry-common.c
+                                                                      kernel_exit 1
+                                                                  SYM_CODE_END(el1_sync)
+
+                                                                  .align 6
+                                                                  SYM_CODE_START_LOCAL_NOALIGN(el1_irq)
+                                                                      kernel_entry 1
+                                                                      ...
+                                                                      irq_handler                    
+                                                                      kernel_exit 1
+                                                                  SYM_CODE_END(el1_irq)
+
+                                                                  .align 6
+                                                                  SYM_CODE_START_LOCAL_NOALIGN(el0_sync)
+                                                                      kernel_entry 0
+                                                                      ...
+                                                                      bl el0_sync_handler           //arch/arm64/kernel/entry-common.c
+                                                                      b ret_to_user
+                                                                  SYM_CODE_END(el1_irq)
+
+                                                                  .macro irq_handler
+                                                                      ldr_l x1, handle_arch_irq     //gic_handel_irq) in /kernel/irq/irq-gic-v3.c
+                                                                      ...
+                                                                      blr x1
+                                                                      ...
+                                                                  .endm
+
