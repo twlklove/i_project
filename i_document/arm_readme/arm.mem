@@ -37,6 +37,8 @@
                                                                   .macro kernel_ventry, el, label, regsize=64
                                                                   .align 7                 //2^7=128B=0x80
                                                                       ...
+                                                                      sub sp, sp, #SP_FRAME_SIZE
+                                                                      ...
                                                                       b el\()\el\()_\label          //b el1_sync/el0_irq/and so on
                                                                   .endm
 
