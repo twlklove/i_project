@@ -11,7 +11,7 @@
   1.4. 页表支持
     支持至少两级页表，至多四级页表，Level 0 ~ Level 3。
 
-2. for vmlinux 
+2. for vmlinux;  //aarch64-linux-gnu-objdump -S output/build/linux-custom/vmlinux; readelf -S vmlinux 
   2.1 first cmd is 91005a4d, as flow:
     00010000: 4d5a 0091 ff3f 2114 0000 0000 0000 0000  MZ...?!.........
     00010010: 0000 aa00 0000 0000 0a00 0000 0000 0000  ................
@@ -79,4 +79,5 @@
                                                                       blr x1
                                                                       ...
                                                                   .endm
-
+3. 
+arch/arm64/kernel/vm.linux.lds.S
