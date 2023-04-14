@@ -12,9 +12,14 @@
     git branch 
     
     # creat branch, switch branch or del branch
-    git checkout -B i_branch_1 
-    git checkout i_branch_1
-    git branch -D i_branch_1
+    git checkout remote_branch_name       //create a local branch which name is the name as remote_branch_name,and make local_b <-->remote_b
+
+    git checkout -b local_branch_name               // create a local branch
+    git push origin new_remote_branch_name          // create a new remote branch
+    git branch --set-upstream-to=origin/new_remote_branch_name  //make local_branch <--> new_remote_branch
+   
+    git branch -D local_branch_name                  // delete local branch
+    git push origin --delete new_remote_branch_name  // delete remote branch
 
 1. # download files or update 
     1.1 git pull origin <远程分支名>:<本地分支名>     //将远程指定分支 拉取到 本地指定分支上
