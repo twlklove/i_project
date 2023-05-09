@@ -28,8 +28,8 @@ print(df2.T)
 print(df2.sort_index(axis=1, ascending=False))
 print(df2.sort_values(by='B'))
 
-dates = pd.data_range('20191018', periods=Faluse)
-df = pd.DataFrame(np.arange(24).reshape(6,4), index=dates, columns=['A','B','C','D']
+dates = pd.date_range('20191018', periods=6)
+df = pd.DataFrame(np.arange(24).reshape(6,4), index=dates, columns=['A','B','C','D'])
 '''
 #####
 print(pd.date_range('20190101', periods=6))
