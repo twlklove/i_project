@@ -1,0 +1,5 @@
+目前来看，零拷贝技术的几个实现手段包括：
+mmap+write
+sendfile/sendfile+DMA
+splice 
+VFIO : 主要工作是把设备通过 IOMMU 映射的 DMA 物理内存地址映射到用户态中，在用户态实现设备的驱动程序
