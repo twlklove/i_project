@@ -217,7 +217,7 @@ linux下进程间通信的几种主要手段简介：
    1. 管道（Pipe）及有名管道（named pipe）：管道可用于具有亲缘关系进程间的通信，有名管道还允许无亲缘关系进程间的通信
       pipe(),popen() / mkfifo(),mknod()
    2. 信号（Signal）：用于通知接受进程有某种事件发生，用于进程间通信,linux sigaction函数重新实现了signal 函数；
-      kill(),raise(),pause(),signal()
+      kill(),raise(),pause(),signal(),sigaction()
    3. 消息（Message）队列：消息队列是消息的链接表，消息队列克服了信号承载信息量少，管道只能承载无格式字节流以及缓冲区大小受限等缺点。 
       ftok(),msgget(),msgsnd(),msgrcv(),msgctl()
    4. 共享内存：使得多个进程可以访问同一块内存空间，是最快的可用IPC形式。是针对其他通信机制运行效率较低而设计的。往往与其它通信机制，如信号量结合使用，来达到进程间的同步及互斥。
