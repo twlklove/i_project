@@ -201,6 +201,7 @@ u32 cfg_dump_proto_id = 0;
 u32 cfg_dump_sub_proto_id = 0;
 u32 cfg_ignore_outgoing = 0;
 
+void test_for_create_new_tcp_packet();
 void test_for_checksum();
 
 u16 tcp_v4_check(u32 len, u32 saddr, u32 daddr, u32 csum)
@@ -208,7 +209,7 @@ u16 tcp_v4_check(u32 len, u32 saddr, u32 daddr, u32 csum)
     return csum_tcpudp_magic(saddr, daddr, len, IPPROTO_TCP, csum);
 }
 
-u32 verify_tcp_checksum(u8 *p_data, u16 data_len)
+u32 verify_tcp_checksum(u8 *p_data, u16 data_len, u8 update)
 {
     u32 ret = 0;
     frame_header_no_hdr_extend *p_head = (frame_header_no_hdr_extend*)p_data;  
@@ -244,12 +245,17 @@ u32 verify_tcp_checksum(u8 *p_data, u16 data_len)
         dump_debug("tcp calc checksum is 0x%04x, src checksum is 0x%04x\n", ntohs(csum), ntohs(src_check)); 
     }
 
-    p_head->tcp_check = src_check;
-
+    if (update) {
+        p_head->tcp_check = csum;
+    }
+    else {
+        p_head->tcp_check = src_check;
+    }
+    
     return ret;
 }
 
-u32 verify_ip_checksum(u8 *p_data, u16 data_len)
+u32 verify_ip_checksum(u8 *p_data, u16 data_len, u8 update)
 {
     u32 ret = 0;
     frame_header_no_hdr_extend *p_head = (frame_header_no_hdr_extend*)p_data; 
@@ -267,21 +273,26 @@ u32 verify_ip_checksum(u8 *p_data, u16 data_len)
         dump_debug("ip calc checksum is %04x, src checksum is %04x\n", ntohs(csum), ntohs(src_check)); 
     }
 
-    p_head->ip_check = src_check;
+    if (update) {
+        p_head->ip_check = csum;
+    }
+    else {
+        p_head->ip_check = src_check;
+    }
 
     return ret;
 }
 
-u32 verify_checksum(u8 *p_data, u16 data_len)
+u32 verify_checksum(u8 *p_data, u16 data_len, u8 update)
 {
     u32 ret = 0;
     do {
-        ret = verify_tcp_checksum(p_data, data_len);
+        ret = verify_tcp_checksum(p_data, data_len, update);
         if (0 != ret) {
             break;
         }
 
-        ret = verify_ip_checksum(p_data, data_len);
+        ret = verify_ip_checksum(p_data, data_len, update);
     } while(0);
     return ret;
 }
@@ -327,7 +338,6 @@ void parse_data(u8 *p_data, u32 data_len, msg_info *p_msg_info)
     }
 
     frame_header_no_hdr_extend *p_head = (frame_header_no_hdr_extend*)p_data;
-
     if (IS_BROADCAST(p_head)) {
         p_msg_info->msg_type_id = PROTO_BROADCAST;
         dump_debug("broadcast msg\n");
@@ -568,9 +578,9 @@ void *recv_thread(void *p_args)
 
                     memset(&msg_info_tmp, 0, sizeof(msg_info_tmp));
                     parse_data(buf, len, &msg_info_tmp);
-                           
+               
                     if (PROTO_TCP == msg_info_tmp.msg_type_id) {
-                        ret = verify_checksum(buf, len);
+                        ret = verify_checksum(buf, len, 0);
                         if (ret != 0) {
                             //continue;
                         }
@@ -620,7 +630,7 @@ void help()
 s32 parse_args(s32 argc, char *argv[])
 {
     s32 ret = 0;
-    char *short_opts = (char*)"i:abudtc:s::hRC";
+    char *short_opts = (char*)"i:abudtc:s::hRCN";
     struct option long_opts[] = {
         {"eth",        required_argument, NULL, 'i'},
         {"arp",        no_argument,       NULL, 'a'},
@@ -633,6 +643,7 @@ s32 parse_args(s32 argc, char *argv[])
         {"recv",       optional_argument, NULL, 'R'},
         {"help",       no_argument,       NULL, 'h'},
         {"checksum",   no_argument,       NULL, 'C'},
+        {"new_packet", no_argument,       NULL, 'N'},
         {0, 0, 0, 0},
     };
 
@@ -653,6 +664,10 @@ s32 parse_args(s32 argc, char *argv[])
                 break;
             case 'C':
                 test_for_checksum();
+                ret = 1;
+                return ret;
+            case 'N':
+                test_for_create_new_tcp_packet();
                 ret = 1;
                 return ret;
             case 'u':
@@ -702,11 +717,56 @@ s32 parse_args(s32 argc, char *argv[])
     return ret;
 }
 
+#include "packet.data"
+void test_for_create_new_tcp_packet()
+{ 
+    u32 data_len = sizeof(packet_data); 
+
+    msg_info msg_info_tmp;
+    memset(&msg_info_tmp, 0, sizeof(msg_info_tmp));
+    parse_data(packet_data, data_len, &msg_info_tmp);       
+    if (PROTO_TCP != msg_info_tmp.msg_type_id) {
+        dump("no tcp data needed\n");
+        return;
+    }
+
+    frame_header_no_hdr_extend *p_old_head = (frame_header_no_hdr_extend*)packet_data;
+    u8 data[255] = {0};
+    memcpy(data, packet_data, data_len);
+    u8 *p_data = &data[0]; 
+    u8 ip_header_offset = 14;
+    u8 iphdr_hlen = 20;
+    u16 tcp_header_offset = ip_header_offset + iphdr_hlen;
+    struct tcphdr *p_tcphdr = (struct tcphdr*)(&p_data[tcp_header_offset]);
+
+    /* change_port */
+    p_tcphdr->source = p_old_head->tcp_dst_port;
+    p_tcphdr->dest = p_old_head->tcp_src_port;
+
+    /* change sequence num */
+    p_tcphdr->seq = p_old_head->tcp_ack_seq;
+    u16 old_payload_len = ntohs(p_old_head->ip_tot_len) - (p_old_head->ip_hdr_len * 4) - (p_old_head->tcp_hdr_len * 4);
+    dump("payload len is %d\n", old_payload_len);
+    p_tcphdr->ack_seq = htonl(ntohl(p_old_head->tcp_seq) + old_payload_len);
+
+    /* change src addr and dst addr */
+    struct iphdr *p_iphdr = (struct iphdr*)(&p_data[ip_header_offset]);
+    p_iphdr->saddr = p_old_head->ip_daddr;
+    p_iphdr->daddr = p_old_head->ip_saddr;
+
+    /* checksum */
+    verify_checksum(p_data, data_len, 1);
+
+    /* change mac */
+    struct ether_header *p_ether_hdr = (struct ether_header*)p_data;
+    memcpy(p_ether_hdr->ether_dhost, p_old_head->p_ether_hdr_src_mac, ETHER_ADDR_LEN);
+    memcpy(p_ether_hdr->ether_shost, p_old_head->p_ether_hdr_dst_mac, ETHER_ADDR_LEN);
+    dump_data(p_data, data_len);
+}
+
 void test_for_checksum() 
 {
-    #include "packet.data"
-
-    verify_checksum(packet_data, sizeof(packet_data));
+    verify_checksum(packet_data, sizeof(packet_data), 0);
 }  
 
 
