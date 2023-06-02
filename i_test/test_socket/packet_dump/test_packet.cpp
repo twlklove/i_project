@@ -201,6 +201,7 @@ u32 cfg_dump_proto_id = 0;
 u32 cfg_dump_sub_proto_id = 0;
 u32 cfg_ignore_outgoing = 0;
 
+void test_for_checksum();
 
 u16 tcp_v4_check(u32 len, u32 saddr, u32 daddr, u32 csum)
 {
@@ -212,7 +213,7 @@ u32 verify_tcp_checksum(u8 *p_data, u16 data_len)
     u32 ret = 0;
     frame_header_no_hdr_extend *p_head = (frame_header_no_hdr_extend*)p_data;  
     u32 tcp_len = ntohs(p_head->ip_tot_len) - p_head->ip_hdr_len * 4;
-    dump("src port is %04x, dst port is %04x, ip len is %d, tcp len is %d\n", 
+    dump("src port is 0x%04x, dst port is 0x%04x, ip len is %d, tcp len is %d\n", 
            ntohs(p_head->tcp_src_port), ntohs(p_head->tcp_dst_port), ntohs(p_head->ip_tot_len), tcp_len);
  
     /* for send packet, csum is not finally csum, here is csum = ~tcp_v4_check(tcp_len, p_head->ip_saddr, p_head->ip_daddr, csum), 
@@ -237,10 +238,10 @@ u32 verify_tcp_checksum(u8 *p_data, u16 data_len)
     csum = tcp_v4_check(tcp_len, p_head->ip_saddr, p_head->ip_daddr, csum);
     if (csum != src_check) {
         ret = 1;
-        dump("error: tcp calc checksum is %04x, src checksum is %04x\n", ntohs(csum), ntohs(src_check)); 
+        dump("error: tcp calc checksum is 0x%04x, src checksum is 0x%04x\n", ntohs(csum), ntohs(src_check)); 
     }
     else {
-        dump_debug("tcp calc checksum is %04x, src checksum is %04x\n", ntohs(csum), ntohs(src_check)); 
+        dump_debug("tcp calc checksum is 0x%04x, src checksum is 0x%04x\n", ntohs(csum), ntohs(src_check)); 
     }
 
     p_head->tcp_check = src_check;
@@ -619,7 +620,7 @@ void help()
 s32 parse_args(s32 argc, char *argv[])
 {
     s32 ret = 0;
-    char *short_opts = (char*)"i:abudtc:s::hR";
+    char *short_opts = (char*)"i:abudtc:s::hRC";
     struct option long_opts[] = {
         {"eth",        required_argument, NULL, 'i'},
         {"arp",        no_argument,       NULL, 'a'},
@@ -631,6 +632,7 @@ s32 parse_args(s32 argc, char *argv[])
         {"dump_len",   optional_argument, NULL, 's'},
         {"recv",       optional_argument, NULL, 'R'},
         {"help",       no_argument,       NULL, 'h'},
+        {"checksum",   no_argument,       NULL, 'C'},
         {0, 0, 0, 0},
     };
 
@@ -649,6 +651,10 @@ s32 parse_args(s32 argc, char *argv[])
                 dump_debug("%s\n", argv[optind-1]);
                 cfg_dump_proto = PROTO_BROADCAST;
                 break;
+            case 'C':
+                test_for_checksum();
+                ret = 1;
+                return ret;
             case 'u':
                 dump_debug("%s\n", argv[optind-1]);
                 cfg_dump_proto = PROTO_UDP;
@@ -696,16 +702,28 @@ s32 parse_args(s32 argc, char *argv[])
     return ret;
 }
 
+void test_for_checksum() 
+{
+    #include "packet.data"
+
+    verify_checksum(packet_data, sizeof(packet_data));
+}  
+
+
 s32 main(s32 argc, s8 *argv[])
 {
     pthread_t ptd = 0;
     void *p_args = NULL;
     s32 ret = 0;
-
+   
     do {
         ret = parse_args(argc, argv);
-        if (0 != ret) {
+        if (ret < 0) {
             dump("fail to parse args\n");
+            break;
+        }
+        else if (ret > 0) {
+            ret = 0;
             break;
         }
 
