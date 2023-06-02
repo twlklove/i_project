@@ -1,0 +1,5 @@
+
+# "s_task" is a coroutine library written in pure C and asm (from boost library), without C++ required.
+# supports various platforms, such as windows, linux, android, macos, stm32, stm8, arduino, etc.
+
+git clone https://github.com/xhawk18/s_task.git
