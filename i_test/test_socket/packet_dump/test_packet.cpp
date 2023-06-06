@@ -766,7 +766,21 @@ void test_for_create_new_tcp_packet()
 
 void test_for_checksum() 
 {
-    verify_checksum(packet_data, sizeof(packet_data), 0);
+    #define BUF_SIZE 1514
+    const char *p_file_name = "packet.bin.data";
+    u8 buf[BUF_SIZE] = {0};
+
+    FILE *fd = fopen(p_file_name, "rb+");
+    if (!fd) {
+        dump("fail to open file\n");
+        return;
+    }
+
+    u32 size = fread(buf, sizeof(buf[0]), BUF_SIZE, fd);
+    dump_data(buf, size);
+    fclose(fd);
+
+    verify_checksum(buf, size, 0);
 }  
 
 
