@@ -1,1 +1,116 @@
-https://github.com/EmbeddedRPC/erpc.git
+/*************************** erpc : Embeded Remote Procedure Call *******************************************/
+https://embeddedrpc.github.io/eRPC/index.html
+git clone https://github.com/EmbeddedRPC/erpc.git
+git checkout master
+
+make
+make install
+
+/********************************* for erpcgen ***************************************************************/
+erpcgen xx.erpc   // erpcgen is a compiler for erpc, code is in erpcgen
+
+/******************************** for erpcsniffer ***********************************************************/
+erpcsniffer is used for sniffer packages, code is in erpcsniffer
+erpcsniffer -t tcp -p 12345 -h localhost -v -o erpcOutput.txt test/test_lists/test_lists.erpc
+
+/******************************** for erpc_c ****************************************************************/
+erpc code is in erpc_c for c and c++
+
+1. Here is a block diagram of an RPC system:
+                         client              <------------------->  server
+Application layer        Application calls
+                         remote_function()                           remote_function()
+Generated shim code      remote_funcion() shim                       Server shim calls requested function
+Protocol layer           marshal invocation and parametes            unmarshal invocation and parametes
+
+                                                  byte stream
+Transport layer          send datas      <-------------------------> receive datas
+
+2. dirs
+   config 
+   port
+   setup   : api which will be called by application 
+              typedef struct ErpcTransport *erpc_transport_t; // is typedef void * erpc_transport_t; 
+              erpc_transport_tcp_init                         //TCPTransport; erpc_transport_setup.h erpc_setup_tcp.cpp 
+              erpc_mbf_dynamic_init                           //erpc_c/setup/erpc_mbf_setup.h 
+              erpc_client_init                                // erpc_client_setup.h
+
+              erpc_server_init                                
+              create_DEMO_service
+              erpc_add_service_to_server
+              erpc_server_run                                 // erpc_server_setup.h
+
+   infra   : 
+              class FramedTransport : public Transport         // erpc_framed_transport.hpp erpc_transport.hpp
+
+              class ClientManager : public ClientServerCommon   //erpc_client_manager.hpp erpc_client_server_common.hpp 
+                 class Codec                                   //erpc_codec.hpp
+
+              class Service                                
+              class Server : public ClientServerCommon          //erpc_server.hpp erpc_client_server_common.hpp
+              class SimpleServer : public Server               // erpc_simple_server.hpp ==> SimpleServer is very important
+ 
+
+   transports 
+             class TCPTransport : public FramedTransport      //erpc_tcp_transport.hpp 
+        
+
+/******************************** for erpc_python ***********************************************************/
+erpc code is in erpc_pyton for python
+
+/**********************************  for test ***************************************************************/
+//test/test_lists/test_lists_client_impl.cpp
+
+//test/common/unit_test_tcp_client.cpp
+
+//test/common/gtest/gtest.h
+inline int RUN_ALL_TESTS() {
+    return ::testing::UnitTest::GetInstance()->Run();
+}
+//test/common/gtest/gtest.cpp
+UnitTest::Run()
+    UnitTestImpl::RunAllTests()
+        GetMutableTestCase(test_index)->Run() //TestCase* GetMutableTestCase(),==>TestCase::Run()
+            TestInfo* TestCase::GetMutableTestInfo()->Run() // TestInfo::Run()
+                test->Run() // Test::Run()
+                    Test::TestBody()
+
+/***************** test/common/gtest/gtest.h **********************/
+// Define this macro to 1 to omit the definition of TEST(), which
+// is a generic name and clashes with some other libraries.
+# define TEST(test_case_name, test_name) GTEST_TEST(test_case_name, test_name)
+
+#define GTEST_TEST(test_case_name, test_name)\
+  GTEST_TEST_(test_case_name, test_name, \
+              ::testing::Test, ::testing::internal::GetTestTypeId())
+
+// Helper macro for defining tests.
+#define GTEST_TEST_(test_case_name, test_name, parent_class, parent_id)\
+class GTEST_TEST_CLASS_NAME_(test_case_name, test_name) : public parent_class {\
+ public:\
+  GTEST_TEST_CLASS_NAME_(test_case_name, test_name)() {}\
+ private:\
+  virtual void TestBody();\
+  static ::testing::TestInfo* const test_info_ GTEST_ATTRIBUTE_UNUSED_;\
+  GTEST_DISALLOW_COPY_AND_ASSIGN_(\
+      GTEST_TEST_CLASS_NAME_(test_case_name, test_name));\
+};\
+\
+::testing::TestInfo* const GTEST_TEST_CLASS_NAME_(test_case_name, test_name)\
+  ::test_info_ =\
+    ::testing::internal::MakeAndRegisterTestInfo(\
+        #test_case_name, #test_name, NULL, NULL, \
+        (parent_id), \
+        parent_class::SetUpTestCase, \
+        parent_class::TearDownTestCase, \
+        new ::testing::internal::TestFactoryImpl<\
+            GTEST_TEST_CLASS_NAME_(test_case_name, test_name)>);\
+void GTEST_TEST_CLASS_NAME_(test_case_name, test_name)::TestBody()
+
+/*************************************** usage **************************/
+test_lists/Linux/tcp/gcc/test_lists_client/Release/test_lists_client_tcp_test
+test_lists/Linux/tcp/gcc/test_lists_server/Release/test_lists_server_tcp_test
+erpcsniffer -t tcp -p 12345 -h localhost -v -o erpcOutput.txt test/test_lists/test_lists.erpc
+
+
+
