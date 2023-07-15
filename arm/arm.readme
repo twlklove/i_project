@@ -1,0 +1,91 @@
+##在嵌入式系统中uboot+DT，而服务器领域的UEFI+ACPI也将是ARM服务器的必然选择
+
+https://developer.arm.com/documentation/den0024/a
+https://www.st.com/en/microcontrollers-microprocessors/stm32h745-755.html
+https://wiki.st.com/stm32mpu/wiki/Linux_RPMsg_framework_overview
+  stm32h745i
+  stm32mp157f
+https://www.qualcomm.com/products/automotive
+
+############################################## ARM  ####################################
+ARM v8架构
+ARM体系结构从最初的V1版本到现在已经有很大的变化，总共有8个版本：v1~v8，不过目前正在使用的只有v4 ~ v8，最被的3个版本已经被废弃。
+从ARMv7开始，ARM将其体系结构分成3大不同应用，称之为ARM-A、ARM-R、ARM-M
+    A：高性能应用处理器（本文主要描述这种）
+    R：实时操作应用
+    M：微处理器应用
+v8在v7的基础上做了很大的改动：
+    支持64位工作模式，64位工作模式时称之为AArch64，32位工作模式时称之为AArch32（兼容以前的版本）
+    取消了CPU的工作模式，采用”异常级别”，有E0~E3 4种级别
+    ARMv8的AArch64时取消了ARM v7的工作模式(User/FIQ/IRQ/…)，相应的也取消了CPSR寄存器，改用EL0 - EL3 总共4种异常级别，其中：
+        EL3级别权限最高，EL0级别权限最低
+        EL0级别为非特权级别，EL1-EL3称为特权级别，通常应用程序在EL0级
+        通常EL0级用于application，EL1用于kernel，EL2用于Hypervisor或虚拟化，EL3用于安全应用
+        EL3级别通过SCR_EL3控制EL2-EL0，EL2级别通过HCR_EL2控制EL1-EL0，
+        CPU必须实现EL0,EL1功能，EL2,EL3可以选择性实现，通过ID_AA64PFR0_EL1寄存器可看否实现了EL2及EL3
+    AArch64状态
+        31个通用的64位寄存器：x0~x30，基中x30通常用于LP寄存器
+        1个64位PC寄存器
+        各种系统寄存器，比如SP、SPSR寄存器，每个系统寄存器有多个（异常类型不同），使用_ELx作为后缀
+        32个128位的SIMD向量
+        使用armv8的异常模式，有4种异常模式：E0~E3
+        支持64位虚拟地址总线宽度
+        有1个PE(处理器)状态寄存器PSTATE
+        系统寄存器使用添加下标方式来访问不同模式下的寄存器，具体形式：\<register_name>_ELx
+
+    通用定时器
+        ARMv8核心提供了4个定时器
+            Hypervisor Physical Timer
+            Virtual Timer
+            Physical Timer（linux默认使用这个作为系统时钟）
+            Physical Secure Timer
+        所有定时器都使用同一个时钟源——系统时钟，一般CNTFRQ_EL0寄存器中会保存定时器的频率
+        有2个累加寄存器CNTPCT_EL0、CNTVCT_EL0，分别用于Physical 和Virtual定时器，在CPU运行时累加寄存器会一直累加，寄存器是64位的，就算是10Ghz的主频来说可以运行57.4年，理论是够用的
+
+Note: D5 or B8 in armv7 Reference Manual and generic timer in stm32mp157 
+1. Generic timer for armv7 and armv8, 包含：共享的System Counter、各个Processor专有的Timer
+   1.1 System Counter：给所有Processor提供统一的时间
+      a system timer/counter:provides a uniform view of system time,only counter,no interrput,in an always-on power domain,such as STGEN of stm32
+   1.2 Timer：可以设置周期性的事件，给Processor提供中断信号
+      generic timers: generation of timer events as interrupt outputs
+                   generation of event streams
+
+   1.3 arch_timer_rate这个全局变量用来保存system counter的输入频率，基本上，这个数据有两个可能的来源：arch_timer_of_configure_rate() in linux
+        （a）device tree node中的clock-frequency属性
+        （b）寄存器CNTFRQ
+      优先从clock-frequency属性中获取该数据，如果device node中没有定义该属性，那么使用CNTFRQ寄存器中的数据
+
+2. uboot中对system timer/counter的CNTFID0和CNTFRQ设置
+    2.1 for armv8, use CNTFRQ_EL0
+    u-boot/arch/arm/cpu/armv8/start.S : 144 
+        #if CONFIG_COUNTER_FREQUENCY
+            branch_if_not_highest_el x0, 4f
+            ldr x0, =CONFIG_COUNTER_FREQUENCY
+            msr cntfrq_el0, x0          /* Initialize CNTFRQ */
+        #endif
+
+    2.2 for armv7: use CNTFRQ or P15
+    u-boot/arch/arm/cpu/armv7/nonsec_virt.S : 192
+        #if CONFIG_COUNTER_FREQUENCY
+            mrc p15, 0, r0, c0, c1, 1       @ read ID_PFR1
+            and r0, r0, #CPUID_ARM_GENTIMER_MASK    @ mask arch timer bits
+            cmp r0, #(1 << CPUID_ARM_GENTIMER_SHIFT)
+            ldreq   r1, =CONFIG_COUNTER_FREQUENCY
+            mcreq   p15, 0, r1, c14, c0, 0      @ write CNTFRQ
+        #endif
+#
+    2.3 for stm32mp175
+    # CNTCR.FCREQ: Frequency change request. Indicates the number of the entry in the frequency table to select
+    # The value of the CNTCR.FCREQ field specifies which frequency modes table entry specifies the system counter update frequency.
+    # Changing the value of CNTCR.FCREQ requests a change to the system counter update frequency.
+
+    # CNTFRQ: register indicates the clock frequency of the system counter, Programming CNTFRQ does not affect the system clock frequency. However, on system initialization, CNTFRQ must be correctly programmed with the system clock frequency, to make this value available to software
+
+    u-boot/drivers/clk/stm32/clk-stm32mp1.c : 1786 stgen_config(...)
+        clrbits_le32(stgenc + STGENC_CNTCR, STGENC_CNTCR_EN);
+        writel(rate, stgenc + STGENC_CNTFID0);  # write CNTFID0(as is frequency modes table entry 0), rate comes from HSE or PLL or others
+        setbits_le32(stgenc + STGENC_CNTCR, STGENC_CNTCR_EN);
+
+        __asm__ volatile("mcr p15, 0, %0, c14, c0, 0" : : "r" (rate));  # write CNTFRQ
+    #STGEN : System timer generator 
+#####################################################################
