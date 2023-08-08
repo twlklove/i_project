@@ -38,7 +38,7 @@ void dump_stack()
     }                                                                                                                        
 }
 
-#ifdef DEBUG
+#ifdef TEST
 void my_func2(void)
 {
     dump_stack();

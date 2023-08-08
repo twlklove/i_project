@@ -1,0 +1,28 @@
+1. set you own handler(dump stack and registers) for sig SIGSEGV
+2. set mem protect
+
+3. readelf and addr2line
+
+    ./run
+        Start of region:        0x558ef0d03000, pagesize is 4096
+        Got SIGSEGV at address : 0x558ef0d03000
+        R8: 27
+        stack trace is :
+         [1] ./run(+0x139b) [0x558eef37f39b]
+         [2] /lib/x86_64-linux-gnu/libc.so.6(+0x3bcf0) [0x7fd89043bcf0]
+         [3] ./run(test_1+0xdc) [0x558eef37f49b]
+         [4] ./run(main+0x94) [0x558eef37f534]
+         [5] /lib/x86_64-linux-gnu/libc.so.6(+0x23510) [0x7fd890423510]
+         [6] /lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0x89) [0x7fd8904235c9]
+         [7] ./run(_start+0x25) [0x558eef37f225]
+    
+    addr2line 23510 -e /lib/x86_64-linux-gnu/libc.so.6 -f                  #for so
+        __libc_start_call_main
+        ./csu/../sysdeps/nptl/libc_start_call_main.h:74
+
+    readelf -s ./run  |grep test_1                                         #for exe
+        30: 00000000000013bf   225 FUNC    GLOBAL DEFAULT   16 test_1
+        26: 00000000000013bf   225 FUNC    GLOBAL DEFAULT   16 test_1
+    addr2line 149b -e ./run  -f
+        test_1
+        /root/i_work/i_project/i_test/test_segmentfault/test.c:63 (discriminator 1)

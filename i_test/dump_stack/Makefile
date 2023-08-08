@@ -2,7 +2,11 @@
 CFLAGS=-Wl,-Map=test.map -g -DCONFIG_STACK_DEPTH=10 -rdynamic 
 
 ifeq ($(test), 1)    #make test=1
-CFLAGS+=-DDEBUG -g3
+CFLAGS+=-DTEST -g3
+endif
+
+ifeq ($(debug), 1)    #make debug=1
+CFLAGS+=-g3
 endif
 
 all: clean run
