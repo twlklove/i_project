@@ -1,0 +1,19 @@
+名称       处理器核      架构   主频   ICache DCache SRAM  FLASH Central_DMA DSP FPU Hardware_instructions MPU(max protected mem regions)
+SAME70Q21 32bit-ARM-CM7  ARMV7M 300MHZ 16KB   16KB   384KB  2MB     24        Y   Y    integer divide       Y（16）
+
+名称        标准       最大速率       
+USB(M7)     2.0        480Mbps(HS) 12Mbps(FS) 1.5Mbps(LS)
+            3.0        5Gbps(8/10bit)
+			3.1        10Gbps
+			3.2        20Gbps
+			4.0        40Gbps	
+wifi4       802.11n	   300Mbps	
+wifi5       802.11ac   1.3Gbps
+wifi6		802.11ax   9.6Gpbs
+蓝牙        4.2        1Mbps
+            5.0        2Mbps
+顾凯蓝牙    4.2        40KB/s = 320Kbps
+Eth(M7)                10/100Mbps 
+CAN         2.0        1Mbps
+CANFD       2.0        8Mbps
+
