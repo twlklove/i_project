@@ -1,0 +1,48 @@
+https://github.com/facebookresearch/llama
+https://github.com/ggerganov/llama.cpp
+https://mestrace.github.io/posts/2023/Mar/15/llama-rpi/
+
+
+###llama.cppz安装和使用
+sudo su
+apt-get update
+apt-get upgrade
+
+apt-get install gcc g++ python3 python3-pip
+python3 -m pip install torch numpy sentencepiece
+
+### build this repo
+git clone https://github.com/ggerganov/llama.cpp
+cd llama.cpp
+make
+    #Note: 1. make UNAME_P=armv7 UNAME_M=armv7  for Rasbian
+    #      2. Don't use vdotq_s32 if it's not available
+
+###预处理模型
+# obtain the original LLaMA model weights and place them in ./models
+ls ./models
+    #   65B 30B 13B 7B tokenizer_checklist.chk tokenizer.model
+# install Python dependencies
+python3 -m pip install torch numpy sentencepiece
+
+# convert the 7B model to ggml FP16 format
+python3 convert-pth-to-ggml.py models/7B/ 1
+
+# quantize the model to 4-bits
+./quantize.sh 7B
+
+###我们将前面下载下来的模型放到llama.cpp/models文件夹，主要包含7B模型文件夹和tokenizer.model分词器模型。然后使用convert-pth-to-ggml.py进行预处理转换成FP16精度，最后使用./quantize.sh脚本进行4 bit量化以进一步缩小。
+到这里安装就已经结束了, 使用llama.cpp: 
+1. 先来跑一个简单的Hello World。
+./main -m ./models/7B/ggml-model-q4_0.bin -p "Hello world!" -t 8 -n 512
+
+
+2. 再跑一个官方例子
+./main -m ./models/7B/ggml-model-q4_0.bin -p "Building a website can be done in 10 simple steps:" -t 8 -n 512
+
+
+#ChatGPT论文阅读系列-LLaMA: Open and Efficient Foundation Language Models
+https://zhuanlan.zhihu.com/p/613111988
+#LLaMA快速上手指南: 便捷构建“本地版ChatGPT” 
+https://zhuanlan.zhihu.com/p/612002642
+o

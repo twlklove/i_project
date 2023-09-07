@@ -67,6 +67,22 @@ void test_1()
 
 }
 
+void test_2()
+{
+    char buffer[4096] = {0};
+    int  data = 0;
+    printf("%p\n", buffer);
+    int page_size = getpagesize();
+    char *p_buf = (char*)(((unsigned long)buffer + page_size - 1) & (~(page_size - 1)));
+    printf("%p\n", p_buf);
+    if (mprotect(p_buf, 10, PROT_READ) == -1)
+        handle_error("mprotect");
+    
+    buffer[1] = 1;
+    printf("Loop completed\n");     /* Should never happen */
+    exit(EXIT_SUCCESS);
+}
+
 int main(int argc, char *argv[])
 {
     struct sigaction sa;
@@ -76,8 +92,12 @@ int main(int argc, char *argv[])
     if (sigaction(SIGSEGV, &sa, NULL) == -1) 
         handle_error("sigaction");
 
+    if (sigaction(SIGABRT, &sa, NULL) == -1) 
+        handle_error("sigaction");
+
 //    test_0();
-    test_1();
+//    test_1();
+      test_2();
 
     return 0;
 }
