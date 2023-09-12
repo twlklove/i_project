@@ -1,0 +1,11 @@
+## grpc and tensorflow
+#git clone https://github.com/grpc/grpc.git
+#git clone https://github.com/protocolbuffers/protobuf.git
+git clone https://github.com/tensorflow/tensorflow.git
+git clone https://github.com/tensorflow/examples
+git clone https://github.com/tensorflow/models.git
+
+# pytorch
+git clone  https://github.com/pytorch/pytorch.git
+git clone  https://github.com/pytorch/examples.git
+
