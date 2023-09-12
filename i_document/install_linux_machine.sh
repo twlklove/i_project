@@ -31,8 +31,4 @@ apt install -y python3-pip
 pip3 install numpy
 pip3 install pandas
 pip3 install matplotlib
-pip3 install tensorflow
-#conda install pytorch torchvision torchaudio pytorch-cuda=11.7 -c pytorch -c nvidia
-#pip3 install torch torchvision torchaudio      # for cuda=11.7
-#conda install pytorch torchvision torchaudio cpuonly -c pytorch
-pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu
+

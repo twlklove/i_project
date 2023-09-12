@@ -45,10 +45,9 @@ wget https://ftp.isc.org/isc/dhcp/4.4.3/dhcp-4.4.3.tar.gz
 ## lwip
 #git clone https://github.com/lwip-tcpip/lwip.git
 
-## grpc and tensorflow
+## grpc
 git clone https://github.com/grpc/grpc.git
 git clone https://github.com/protocolbuffers/protobuf.git
-git clone https://github.com/tensorflow/tensorflow.git
 
 ## cppcheck
 wget yum install cppcheck http://sourceforge.net/projects/cppcheck/files/cppcheck/2.6/cppcheck-2.6.tar.gz

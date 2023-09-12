@@ -1,11 +1,30 @@
-## grpc and tensorflow
+# install python
+sudo apt install python
+
+# install Package Manager: Anaconda and pip3
+#curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+#sh Miniconda3-latest-Linux-x86_64.sh
+#(You may have to open a new terminal or re-source your ~/.bashrc to get access to the conda command.)
+#
+#sudo apt install python3-pip    #pip install --upgrade pip
+
+#pip3 install tensorflow
+# grpc and tensorflow
 #git clone https://github.com/grpc/grpc.git
 #git clone https://github.com/protocolbuffers/protobuf.git
 git clone https://github.com/tensorflow/tensorflow.git
 git clone https://github.com/tensorflow/examples
 git clone https://github.com/tensorflow/models.git
 
-# pytorch
+
+
+# install pytorch use pip3 or conda
+# pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+conda install pytorch torchvision torchaudio cpuonly -c pytorch  # for cpu 
+
+# pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia  # for gpu
+
 git clone  https://github.com/pytorch/pytorch.git
 git clone  https://github.com/pytorch/examples.git
 
