@@ -1,0 +1,13 @@
+
+uname -a          # lookup linux kernel version
+cat /etc/issue    # lookup ubuntu version
+
+cp /etc/apt/sources.list /etc/apt/sources.list.back
+#install tsinghua source
+
+sudo apt update && sudo apt full-upgrade
+
+# dpkg --remove --force-all cn.com.sangfor.atrust    #delete packge
+
+
+

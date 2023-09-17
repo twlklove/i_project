@@ -1,0 +1,33 @@
+# lookup vga, nvidia and cunda
+lspci | grep -i vga 
+lspci | grep -i nvidia
+nvcc --vesrion
+cat /usr/local/cuda/version.txt
+
+#清除 Nvidia 软件包
+apt autoremove cuda* nvidia* --purge
+
+#安装必要的软件包
+sudo apt install dirmngr ca-certificates software-properties-common apt-transport-https dkms curl -y
+
+#导入 Nvidia 软件源 GPG 密钥 for Ubuntu 22.04 LTS   https://developer.download.nvidia.cn/compute/cuda/repos/
+curl -fSsL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/3bf863cc.pub | sudo gpg --dearmor | sudo tee /usr/share/keyrings/nvidia-drivers.gpg > /dev/null 2>&1
+
+#将 Nvidia 软件源添加到 Ubuntu 系统
+echo 'deb [signed-by=/usr/share/keyrings/nvidia-drivers.gpg] https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/ /' | sudo tee /etc/apt/sources.list.d/nvidia-drivers.list
+
+sudo apt update
+
+#安装 CUDA 和 Nvidia 驱动程序
+apt search cuda-drivers
+apt install nvidia-driver-535 cuda-drivers-535 cuda
+
+# reboot
+
+#获取 GPU 的详细信息
+nvidia-smi
+
+#CUDA Toolkit 文档  https://docs.nvidia.com/cuda/
+#/usr/local/cuda/samples CUDA 示例
+# cuda-gdb 和 nvprof 等工具可以帮助您调试 CUDA 程序并分析其性能
+
