@@ -1,0 +1,18 @@
+
+sort -u
+wc -l
+wc -c
+dirname xx
+basename xx
+md5sum file >file.md5
+md5sum -c --quiet file.md5
+find ./ -maxdepth 1 -type d 
+find ./ -type f \( -name "*.c" -o -name "*.cpp" \)
+
+sed -i '/'"${change}"'/d' file
+
+awk -v type1=$type -v value1=$value '!/'"${pattern}"'/{print "not find" }   '/'"${pattern2}"'/{print "hi" $0; next}'
+
+# add line no.
+sed = {file} \
+      | sed -n '/'"${line_num_pattern}"'/{:a;N; /'${line_no_pattern}"'/!ba; s/\n/ /g; s/'"${line_num_pattern}"'[ ]*$//g; p}'

@@ -1,0 +1,41 @@
+# 带调试信息的追踪
+make debug=-g; gdb run_test
+break test
+command
+p  &data
+watch data == 10
+continue
+end
+run
+
+list  15
+注：追踪出来的行号的上一行才是出问题的地方
+
+#不带调试信息的追踪
+make; gdb run_test
+break test
+command
+set $addr = $sp
+printf "sp addr is 0x%lx\n", $addr
+continue
+end
+run
+
+delete break
+
+set $offset=0x10
+break test
+command
+set $addr = $sp
+printf "sp addr is 0x%lx\n", $addr
+watch *(int*)($addr-$offset) == 10
+continue
+end
+run
+
+problem_variable_addr=0x00000000004009f8
+make debug=-g
+addr2line ${problem_variable_addr} -e run_test  -f -C -s
+
+#没有符号表的函数断点： break *function_addr
+#c++函数的断点：break class_name::function_name(type1, type2,...),可以通过info functions 查询到

@@ -1,0 +1,20 @@
+
+kobject.c   kobject_uevent.c
+
+int kset_register(struct kset *k)  <-> kobject_uevent(&k->kobj, KOBJ_ADD);
+
+int kobject_uevent(struct kobject *kobj, enum kobject_action action)
+{
+	return kobject_uevent_env(kobj, action, NULL);
+}
+
+int kobject_uevent_env(struct kobject *kobj, enum kobject_action action, char *envp_ext[]) {
+
+//uevent_helper[] <-> /sys/kernel/uevent_helper <-----> /proc/sys/kernel/hotplut
+    kobject_uevent_net_broadcast(...)   // first: netlink 
+	
+#ifdef CONFIG_UEVENT_HELPER
+    call_usermodehelper_exec(...)       // second : call user thread
+#endif
+
+}

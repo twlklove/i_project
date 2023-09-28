@@ -1,0 +1,99 @@
+
+git tag vci=V1.18.06
+git push origin vci=V1.18.06
+git tag
+git show vci=V1.18.06
+
+
+git branch  xx
+git checkout xx
+git push -u origin xx
+git push --delete origin xx
+
+
+##so或可执行文件均可，但是编译需要-g
+addr2line  -e libComm.so  -f -C -p -a 0x4a9b4
+
+gdb
+help  命令
+
+默认GDB会在加载动态库时自动暂停
+set stop-on-solib-events on：启用在加载动态库时暂停的功能。
+set stop-on-solib-events off：禁用在加载动态库时暂停的功能。
+catch load <library>：设置在加载指定动态库时暂停。<library>表示要设置的动态库名称。例如，catch load libexample.so将在加载名为libexample.so的动态库时暂停。
+catch load <regexp>：设置在加载符合指定正则表达式的动态库时暂停。<regexp>表示要设置的正则表达式。例如，catch load lib.*\.so将在加载名称以lib开头且以.so结尾的动态库时暂停。
+
+start
+set $dlopen_addr = 0x0000823456
+call (void*)$dlopen_addr("libComm.so", 2)
+
+
+x/<n><format> <address>：以指定格式查看指定地址的内容。<n>表示要显示的字节数，<format>表示显示的格式，<address>表示要查看的地址。例如，x/4xw 0x12345678将以16进制格式显示从地址0x12345678开始的4个字（每个字为4个字节）的内容。
+x/ni <address>：以汇编指令格式查看指定地址的指令。<address>表示要查看的地址。例如，x/5i main将显示main函数的前5条指令。
+
+layout split
+layout regs
+
+
+################
+break your_function if a == 8
+
+define my_function
+> # 在这里编写函数的代码
+> end
+
+call my_function()
+
+
+插入变量到test函数
+(gdb) break test
+(gdb) run
+(gdb) call int a = 10
+
+
+attach <pid>
+info address <function_name>
+info symbol <function_address>
+info register sp
+
+# 带调试信息的追踪
+make debug=-g; gdb run_test
+break test
+command
+p  &data
+watch data == 10
+continue
+end
+run
+
+list  15
+注：追踪出来的行号的上一行才是出问题的地方
+
+#不带调试信息的追踪
+make; gdb run_test
+break test
+command
+set $addr = $sp
+printf "sp addr is 0x%lx\n", $addr
+continue
+end
+run
+
+delete break
+
+set $offset=0x10
+break test
+command
+set $addr = $sp
+printf "sp addr is 0x%lx\n", $addr
+watch *(int*)($addr-$offset) == 10
+continue
+end
+run
+
+problem_variable_addr=0x00000000004009f8
+make debug=-g
+addr2line ${problem_variable_addr} -e run_test  -f -C -s
+
+没有符号表的函数断点： break *function_addr
+c++函数的断点：break class_name::function_name(type1, type2,...),可以通过info functions 查询到

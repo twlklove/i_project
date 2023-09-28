@@ -1,0 +1,22 @@
+
+1. use coredump 
+   # coredump,   ulimit -c,   /proc/sys/kernel/core_pattern 
+   gdb ./run  ./core
+
+2. use  # dmesg, /var/log/messages 
+# for example, dmesg:
+[9311766.290581] run[247826]: segfault at 7ffe42200010 ip 00007fc7cb1bf777 sp 00007ffe421fffc0 error 7 in libtest.so[7fc7cb1bf000+1000]
+or :
+cmd=test_run; kill ${cmd} 2>/dev/null; ./${cmd} & ps -ef | grep ${cmd}$ | sed 's/[ ]\+/ /g' | cut -d' ' -f2 | xargs -n 1 -i cat /proc/{}/maps
+
+
+Note:
+    1. segfult is in libtest.so
+    2. libtest.so is mapped in where from 7fc7cb1bf000 to  7fc7cb1bf000 + 1000  
+    3. ip is 00007fc7cb1bf777 when segfault 
+
+So : 
+    segfault offset_addr is ip - base_addr_mapped, as is 00007fc7cb1bf777 - 7fc7cb1bf000  = 777
+   
+and then get colde line:
+    addr2line -e libtest.so -f -C -s  777

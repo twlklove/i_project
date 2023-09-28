@@ -1,0 +1,119 @@
+socket() =>
+           sock->type = type;  
+           pf = net_families[family]; 
+		   pf->create(...)即inet_create()； 
+		       answer = inetsw[sock->type]
+			   sock->ops = answer->ops;
+			   sock->sk = sk;
+			   sk->sk_socket = sock;
+			   
+			   sk->sk_prot = answer->prot;   			   
+			   sk->sk_prot->init(sk);
+			   
+		   fd = sock_map_fd(sock,...);  //return fd      注：socket_file_ops： sockfs文件系统相关的文件操作
+ 
+sock_sendmsg(fd, ...)=>
+           sock = sockfd_lookup_light(fd,...);
+           sock->ops->sendmsg(...);
+
+############################################
+static LIST_HEAD(proto_list);
+proto_register(&tcp_prot, 1);
+
+static const struct net_proto_family __rcu *net_families[NPROTO]
+sock_register(&inet_family_ops); //net_families[family] = inet_family_ops;
+static const struct net_proto_family inet_family_ops = {
+	.family = PF_INET,
+	.create = inet_create,
+	.owner	= THIS_MODULE,
+};
+
+inet_register_protosw(...) //inetsw[type] =  inetsw_array[...];
+static struct list_head inetsw[SOCK_MAX];
+static struct inet_protosw inetsw_array[] =
+{
+	{
+		.type =       SOCK_STREAM,
+		.protocol =   IPPROTO_TCP,
+		.prot =       &tcp_prot,
+		.ops =        &inet_stream_ops,
+	},	
+	...
+};
+
+const struct proto_ops inet_stream_ops = {
+	.sendmsg	   = inet_sendmsg,                 //sk = sock->sk; sk->sk_prot->sendmsg(...);
+	.ioctl		   = inet_ioctl,                   //非协议层相关的ioctl
+};
+
+struct proto tcp_prot = {
+    .init			= tcp_v4_init_sock,            //icsk = sk; icsk->icsk_af_ops = &ipv4_specific;
+	.sendmsg		= tcp_sendmsg,                 //icsk = sk; icsk->icsk_af_ops->queue_xmit(...); //即 ip_queue_xmit()
+};
+
+const struct inet_connection_sock_af_ops ipv4_specific = {
+	.queue_xmit	   = ip_queue_xmit,               //ip_local_out() ==>dst_output()=>skb_dst(skb)->output(skb);即 ip_output
+};
+
+//
+ip_output()
+    ip_finish_out2()
+	    neigh = ip_neigh_for_gw() => __ipv4_neigh_lookup_noref() => ___neigh_lookup_noref(&arp_tbl,...); 或者__neigh_create(&arp_tbl,...);
+		neigh_output(neigh, ...)  
+		   neigh_hh_output(...) => dev_queue_xmit() 
+		                                 __dex_xmit_skb()
+										 dev_hard_start_xmit() => xmit_one() => netdev_start_xmit() => ops = dev->netdev_ops; ops->ndo_start_xmit(...)
+		   或者n->output(...)    //即慢速输出neigh_resolve_output
+		       dev_hard_header(); dev_queue_xmit()
+			   
+inet_add_protocol(&tcp_protocol, IPPROTO_TCP)       // inet_protos[IPPROTO_TCP] = &tcp_protocol;
+struct net_protocol *inet_protos[MAX_INET_PROTOS];
+static struct net_protocol tcp_protocol = {
+	.handler	=	tcp_v4_rcv,                     //tcp_queue_rcv()=>__skb_queue_tail(&sk->sk_receive_queue, skb);             
+};
+
+rt_dst_alloc() 
+    rt->dev = dev; rt->ops = &ipv4_dst_ops;   rt->dst.output = ip_output; rt->dst.input = ip_local_deliver
+ip_rcv()=>dst_input()=>skb_dst(skb)->input(skb);  //ip_local_deliver
+ip_local_deliver()
+    ip_local_deliver_finish()
+	    ip_protocol_deliver_rcu() => ipprot = inet_protos[protocol]; ipprot->hanler(skb);   // 即 tcp_v4_rcv；struct sk_buff *skb;
+
+//
+dev_add_pack(&ip_packet_type); 
+    ptype_base[pt->type] == ip_packet_type //ptype_head()
+static struct packet_type ip_packet_type __read_mostly = {
+	.type = cpu_to_be16(ETH_P_IP),
+	.func = ip_rcv,
+	.list_func = ip_list_rcv,
+};
+
+xx_probe()
+    struct net_device *netdev;
+    netdev->netdev_ops = &xx_netdev_ops;
+    netdev->ethtool_ops = &xx_ethtool_ops;
+	register_netdev(netdev); //
+xx_poll()
+    xx_clean_rx_irq() 
+	    netif_receive_skb()	//会调用netif_receive_skb_list_internal()
+     或 napi_gro_receive(napi, skb); 
+		      napi_skb_finish(napi, skb, dev_gro_receive(napi, skb));
+			     gro_normal_one(napi, skb);
+	                netif_receive_skb_list_internal() 
+					       ==> CONFIG_RPS: enqueue_to_backlog();
+					         __netif_receive_skb_list()
+							     __netif_receive_skb_list_core()
+								     __netif_receive_skb_list_ptype()
+    									 struct packet_type *pt_prev;
+										 deliver_ptype_list_skb(skb, &pt_prev,..., &ptype_base[ntohs(type)]);
+										 pt_prev->func(skb, ...);  //即 ip_rcv()
+		napi_complete_done(); //确认无包
+		
+static const struct net_device_ops igb_netdev_ops = {
+    .ndo_open           = xx_open,
+	.ndo_do_ioctl		= igb_ioctl,
+    .ndo_start_xmit		= xx_xmit_frame,
+};
+static const struct ethtool_ops igb_ethtool_ops = {
+    ...
+}

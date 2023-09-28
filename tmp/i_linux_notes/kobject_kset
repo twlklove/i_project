@@ -1,0 +1,56 @@
+void __init driver_init(void)
+{
+	devtmpfs_init();
+	devices_init();
+	buses_init();
+	classes_init();
+	firmware_init();
+
+	of_core_init();
+	platform_bus_init();
+	cpu_dev_init();
+	memory_dev_init();
+	container_dev_init();
+}
+
+core.c (drivers\base) line 2009 : struct kset *devices_kset;
+int __init devices_init(void)：
+	devices_kset = kset_create_and_add("devices", &device_uevent_ops, NULL);    // /sys/devices
+	dev_kobj = kobject_create_and_add("dev", NULL);                             // /sys/dev
+	sysfs_dev_block_kobj = kobject_create_and_add("block", dev_kobj);           // /sys/dev/block
+	sysfs_dev_char_kobj = kobject_create_and_add("char", dev_kobj);             // /sys/dev/char
+	
+int device_register(struct device *dev)
+--> device_initialize(struct device *dev)：
+	dev->kobj.kset = devices_kset;
+	kobject_init(&dev->kobj, &device_ktype);  
+--> device_add(dev);	                                                    // /sys/devices/dev_name   
+    --->int bus_add_device(struct device *dev)
+	     struct bus_type *bus = bus_get(dev->bus);
+         sysfs_create_link(&bus->p->devices_kset->kobj,&dev->kobj, dev_name(dev)); // /sys/bus/bus_name/devices/dev_name -->/sys/devices/.../dev_name
+		 sysfs_create_link(&dev->kobj,&dev->bus->p->subsys.kobj, "subsystem");     // /sys/devices/dev_name/subsystem  -->/sys/bus/subsys_name        
+	                             
+bus.c (drivers\base) line 179 : static struct kset *bus_kset;
+int __init buses_init(void)：
+	bus_kset = kset_create_and_add("bus", &bus_uevent_ops, NULL);               // /sys/bus
+	system_kset = kset_create_and_add("system", NULL, &devices_kset->kobj);     // /sys/devices/system
+	
+int bus_register(struct bus_type *bus)：
+    bus->p = priv;
+    kobject_set_name(&priv->subsys.kobj, "%s", bus->name);
+	priv->subsys.kobj.kset = bus_kset;
+	priv->subsys.kobj.ktype = &bus_ktype;
+	priv->drivers_autoprobe = 1;
+	retval = kset_register(&priv->subsys);                                        // /sys/bus/bus_name
+	
+    priv->subsys.kobj.kset = bus_kset;
+	priv->subsys.kobj.ktype = &bus_ktype;
+    priv->devices_kset = kset_create_and_add("devices", NULL,&priv->subsys.kobj); // /sys/bus/bus_name/devices
+	priv->drivers_kset = kset_create_and_add("drivers", NULL,&priv->subsys.kobj); // /sys/bus/bus_name/drivers
+
+driver_register(struct device_driver *drv) -->bus_add_driver(struct device_driver *drv):
+    drv->p = priv;
+   	priv->kobj.kset = bus->p->drivers_kset;
+	kobject_init_and_add(&priv->kobj, &driver_ktype, NULL,"%s", drv->name);      // /sys/bus/bus_name/drivers/drv_name
+
+/proc/sys/kernel/hotplut     <-----> /sys/kernel/uevent_helper

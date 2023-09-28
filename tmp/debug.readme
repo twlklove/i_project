@@ -1,0 +1,12 @@
+使用mmap()函数：mmap()函数可以将一个文件或者设备映射到内存中，从而可以修改内存属性。可以使用mmap()函数来创建一个新的内存映射区域，并设置相应的属性，如可读、可写、可执行等。
+使用mprotect()函数：mprotect()函数可以修改已经存在的内存映射区域的属性。可以使用mprotect()函数来修改内存区域的保护属性，如可读、可写、可执行等。
+使用setrlimit()函数：setrlimit()函数可以设置进程的资源限制，包括内存限制。可以使用setrlimit()函数来修改进程的内存限制，从而改变内存属性。
+使用sysctl命令：sysctl命令可以用于修改内核参数，包括内存相关的参数。可以使用sysctl命令来修改内核的内存参数，从而改变内存属性。
+
+使用ptrace接口实现gdb条件断点功能，需要以下步骤：
+使用ptrace(PTRACE_ATTACH, pid, 0, 0)将目标进程附加到调试器中。其中pid是目标进程的进程ID。
+使用waitpid(pid, &status, 0)等待目标进程停止。
+使用ptrace(PTRACE_PEEKDATA, pid, addr, 0)读取目标进程的内存数据。其中addr是要读取的内存地址。
+使用ptrace(PTRACE_POKEDATA, pid, addr, data)修改目标进程的内存数据
+ptrace(PTRACE_CONT, pid, 0, 0)继续执行目标进程。
+ptrace(PTRACE_DETACH, pid, 0, 0)将目标进程从调试器中分离。
