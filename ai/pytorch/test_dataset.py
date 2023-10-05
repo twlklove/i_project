@@ -33,7 +33,6 @@ labels_map = {
     9: "Ankle Boot",
 }
 
-mpl.use("pdf")
 figure = plt.figure(figsize=(8, 8))
 cols, rows = 3, 3
 for i in range(1, cols * rows + 1):
