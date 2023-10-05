@@ -5,6 +5,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision.transforms import ToTensor
+import os
 
 # TorchText, TorchVision, and TorchAudio
 
@@ -88,8 +89,8 @@ def start_train(device, train_data, test_data, batch_size, epochs):
     print("Done!")
     
     ## save model
-    torch.save(model.state_dict(), "model.pth")
-    print("Saved PyTorch Model State to model.pth")
+    torch.save(model.state_dict(), model_file)
+    print("Saved PyTorch Model State to {}", model_file)
 
 
 def predict(device,  test_data, index):
@@ -97,7 +98,7 @@ def predict(device,  test_data, index):
        load model and use the model to make predictions
     '''
     model = NeuralNetwork().to(device)
-    model.load_state_dict(torch.load("model.pth"))   ## load model
+    model.load_state_dict(torch.load(model_file))   ## load model
     
     ## use model to make predictions.
     classes = [
@@ -155,7 +156,9 @@ def main(is_train=True):
     print(f"shape of test_data: {test_data[0][0].shape}")
     print(f"label of test_data[0] is : {test_data[0][1]}")
     #print(f"data of test_data[0] is : {test_data[0][0]}")
-    
+  
+    if not os.path.exists('models'):
+       os.makedirs('models')
 
     device = get_device()
     if is_train :
@@ -167,5 +170,6 @@ def main(is_train=True):
     for i in range(10):
         predict(device, test_data, i)
 
+model_file='models/quick_start_model.pth'
 if __name__ == '__main__':
    main() 
