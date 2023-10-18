@@ -1,5 +1,13 @@
+参考： https://my.oschina.net/u/242764/blog/4677177
+
 目前来看，零拷贝技术的几个实现手段包括：
-mmap+write
-sendfile/sendfile+DMA
-splice 
-VFIO : 主要工作是把设备通过 IOMMU 映射的 DMA 物理内存地址映射到用户态中，在用户态实现设备的驱动程序
+1. mmap+write
+2. sendfile
+3. sendfile + DMA scatter/gather: 
+    SG-DMA技术(Scatter-gather DMA方式)是与block DMA方式相对应的一种DMA方式, 比block DMA方式效率更高。
+    block DMA: 要求源物理地址和目标物理地址必须是连续的, 在传输完一块物理上连续的数据后引起一次中断，然后再由主机进行下一块物理上连续的数据传输。
+    Scatter-gather DMA方式: 使用一个链表描述物理上不连续的存储空间，然后把链表首地址告诉DMA master。DMA master在传输完一块物理连续的数据后，不用发起中断，而是根据链表来传输下一块物理上连续的数据，直到传输完毕后再发起一次中断。
+    
+4. splice 
+5. VFIO : 主要工作是把设备通过 IOMMU 映射的 DMA 物理内存地址映射到用户态中，在用户态实现设备的驱动程序
+
