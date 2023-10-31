@@ -367,5 +367,5 @@ if __name__ == '__main__':
     #test_softmax_use_torch_api()  
     #test_multiplayer_perceptron()
     #test_multiplayer_perceptron_use_torch_api()
-    #test_kaggle_house()
+    test_kaggle_house()
     #test_calculate()
