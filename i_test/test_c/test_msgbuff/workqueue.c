@@ -48,7 +48,7 @@ struct workqueue_struct {
     char name[WQ_NAME_LEN];
     u32 flags;
     struct pool_workqueue *cpu_pwqs[NR_CPUS]; // per-cpu pwqs
-    struct poll_workqueue *numa_pwq_tbl[]; // unbond pwqs indexed by node
+    struct pool_workqueue *numa_pwq_tbl[ ]; // unbond pwqs indexed by node
 };
 
 struct worker_pool cpu_worker_pools[NR_CPUS][NR_STD_WORKER_POOLS];
