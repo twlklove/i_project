@@ -1,0 +1,4 @@
+/root/i_work/i_project/i_test/my_gtest_project/build/CMakeFiles/hello_test.dir
+/root/i_work/i_project/i_test/my_gtest_project/build/CMakeFiles/test.dir
+/root/i_work/i_project/i_test/my_gtest_project/build/CMakeFiles/edit_cache.dir
+/root/i_work/i_project/i_test/my_gtest_project/build/CMakeFiles/rebuild_cache.dir

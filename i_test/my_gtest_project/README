@@ -1,0 +1,8 @@
+#https://github.com/google/googletest.git
+#option(BUILD_SHARED_LIBS "Build shared libraries (DLLs)." ON)
+#cmake -S . -B build; cmake --build build; cd build; make install
+
+#link_directories(/usr/local/lib)
+
+cmake -S . -B build
+cmake --build build

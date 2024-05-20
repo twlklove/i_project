@@ -1,0 +1,5 @@
+if(EXISTS "/root/i_work/i_project/i_test/my_gtest_project/build/hello_test[1]_tests.cmake")
+  include("/root/i_work/i_project/i_test/my_gtest_project/build/hello_test[1]_tests.cmake")
+else()
+  add_test(hello_test_NOT_BUILT hello_test_NOT_BUILT)
+endif()
