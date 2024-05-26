@@ -16,7 +16,11 @@ import hashlib
 import tarfile
 import zipfile
 import requests
+import random
 from torch import nn
+import torch.nn.functional as F
+import re
+import collections
     
 def test_0():
     print(inspect.currentframe())
@@ -560,6 +564,17 @@ def load_data_fashion_mnist(batch_size, resize=None):
     return (data.DataLoader(mnist_train, batch_size, shuffle=True, num_workers=get_dataloader_workers()),
             data.DataLoader(mnist_test, batch_size, shuffle=False, num_workers=get_dataloader_workers()))
 
+def evaluate_loss(net, data_iter, loss): #@save
+    """评估给定数据集上模型的损失"""
+    metric = Accumulator(2) # 损失的总和,样本数量
+    for X, y in data_iter:
+        out = net(X)
+        y = y.reshape(out.shape)
+        l = loss(out, y)
+        metric.add(l.sum(), l.numel())
+    return metric[0] / metric[1]
+
+#############################
 '''#####################################################################################################'''
 def try_gpu(i=0):
     if torch.cuda.device_count() >= i + 1:
@@ -615,6 +630,15 @@ def download_all():
     for name in DATA_HUB:
         download(name)
 
+def tokenize(lines, token='word'): #@save
+    """将文本行拆分为单词或字符词元"""
+    if token == 'word':
+        return [line.split() for line in lines]
+    elif token == 'char':
+        return [list(line) for line in lines]
+    else:
+        print('错误：未知词元类型： ' + token)
+
 '''#############################################'''
 def grad_clipping(net, theta): #@save
     """裁剪梯度"""
@@ -628,8 +652,6 @@ def grad_clipping(net, theta): #@save
             param.grad[:] *= theta / norm
 
 '''#############################################'''
-import collections
-
 class Vocab: #@save
     """文本词表"""
     def __init__(self, tokens=None, min_freq=0, reserved_tokens=None):
@@ -676,6 +698,345 @@ def count_corpus(tokens): #@save
         tokens = [token for line in tokens for token in line]
     return collections.Counter(tokens)
 
+###################################################seq model #########################
+def preprocess_data(x, num_steps):
+    toal_len = len(x)
+    features = torch.zeros((toal_len - num_steps, num_steps))
+    for i in range(num_steps):
+        features[:, i] = x[i: toal_len - num_steps + i]
+        
+    labels = x[num_steps:].reshape((-1, 1))
+
+    return labels, features
+
+def seq_model_test_1():
+    # 初始化网络权重的函数
+    def init_weights(m):
+        if type(m) == nn.Linear:
+            nn.init.xavier_uniform_(m.weight)
+    # 一个简单的多层感知机
+    def get_net():
+        net = nn.Sequential(nn.Linear(4, 10), nn.ReLU(),  nn.Linear(10, 1))
+        net.apply(init_weights)
+        return net
+    # 平方损失。注意： MSELoss计算平方误差时不带系数1/2
+    loss = nn.MSELoss(reduction='none')
+
+    def train(net, train_iter, loss, epochs, lr):
+        trainer = torch.optim.Adam(net.parameters(), lr)
+        for epoch in range(epochs):
+            for X, y in train_iter:
+                trainer.zero_grad()
+                l = loss(net(X), y)
+                l.sum().backward()
+                trainer.step()
+        print(f'epoch {epoch + 1}, '  f'loss: {evaluate_loss(net, train_iter, loss):f}')
+        
+    T = 1000 # 总共产生1000个点
+    time = torch.arange(1, T + 1, dtype=torch.float32)
+    x = torch.sin(0.01 * time) + torch.normal(0, 0.2, (T,))
+    plot(time, [x], 'time', 'x', xlim=[1, 1000], figsize=(6, 3))
+     
+    num_steps = 4
+    labels, features = preprocess_data(x, num_steps)
+    
+    batch_size, n_train = 16, 600
+    # 只有前n_train个样本用于训练
+    train_iter = load_array((features[:n_train], labels[:n_train]), batch_size, is_train=True)
+    
+    net = get_net()
+    train(net, train_iter, loss, 5, 0.01)      
+    
+    ##predict
+    onestep_preds = net(features)
+    plot([time, time[num_steps:]], [x.detach().numpy(), onestep_preds.detach().numpy()], 'time',
+             'x', legend=['data', '1-step preds'], xlim=[1, 1000], figsize=(6, 3))
+
+    ####
+    multistep_preds = torch.zeros(T)
+    multistep_preds[: n_train + num_steps] = x[: n_train + num_steps]
+    for i in range(n_train + num_steps, T):
+        multistep_preds[i] = net(multistep_preds[i - num_steps:i].reshape((1, -1)))
+    plot([time, time[num_steps:], time[n_train + num_steps:]], [x.detach().numpy(), onestep_preds.detach().numpy(),
+              multistep_preds[n_train + num_steps:].detach().numpy()], 'time', 'x', legend=['data', '1-step preds', 'multistep preds'],
+             xlim=[1, 1000], figsize=(6, 3))
+
+    ####
+    max_steps = 64
+    features = torch.zeros((T - num_steps - max_steps + 1, num_steps + max_steps))
+    # 列i（i<num_steps）是来自x的观测，其时间步从（i）到（i+T-num_steps-max_steps+1）
+    for i in range(num_steps):
+        features[:, i] = x[i: i + T - num_steps - max_steps + 1]
+    # 列i（i>=num_steps）是来自（i-num_steps+1）步的预测，其时间步从（i）到（i+T-num_steps-max_steps+1）
+    for i in range(num_steps, num_steps + max_steps):
+        features[:, i] = net(features[:, i - num_steps:i]).reshape(-1)
+    steps = (1, 4, 16, 64)
+    plot([time[num_steps + i - 1: T - max_steps + i] for i in steps],
+             [features[:, (num_steps + i - 1)].detach().numpy() for i in steps], 'time', 'x',
+             legend=[f'{i}-step preds' for i in steps], xlim=[5, 1000],
+             figsize=(6, 3))
+
+def seq_data_iter_random(corpus, batch_size, num_steps): #@save
+    """使用随机抽样生成一个小批量子序列"""
+    # 从随机偏移量开始对序列进行分区，随机范围包括num_steps-1
+    corpus = corpus[random.randint(0, num_steps - 1):]
+    # 减去1，是因为我们需要考虑标签
+    num_subseqs = (len(corpus) - 1) // num_steps
+    # 长度为num_steps的子序列的起始索引
+    initial_indices = list(range(0, num_subseqs * num_steps, num_steps))
+    # 在随机抽样的迭代过程中，# 来自两个相邻的、随机的、小批量中的子序列不一定在原始序列上相邻
+    random.shuffle(initial_indices)
+
+    def data(pos):
+        # 返回从pos位置开始的长度为num_steps的序列
+        return corpus[pos: pos + num_steps]
+        
+    num_batches = num_subseqs // batch_size
+    for i in range(0, batch_size * num_batches, batch_size):
+        # 在这里， initial_indices包含子序列的随机起始索引
+        initial_indices_per_batch = initial_indices[i: i + batch_size]
+        X = [data(j) for j in initial_indices_per_batch]
+        Y = [data(j + 1) for j in initial_indices_per_batch]
+        yield torch.tensor(X), torch.tensor(Y)
+
+def seq_data_iter_sequential(corpus, batch_size, num_steps): #@save
+    """使用顺序分区生成一个小批量子序列"""
+    # 从随机偏移量开始划分序列
+    offset = random.randint(0, num_steps)
+    num_tokens = ((len(corpus) - offset - 1) // batch_size) * batch_size
+    Xs = torch.tensor(corpus[offset: offset + num_tokens])
+    Ys = torch.tensor(corpus[offset + 1: offset + 1 + num_tokens])
+    Xs, Ys = Xs.reshape(batch_size, -1), Ys.reshape(batch_size, -1)
+    num_batches = Xs.shape[1] // num_steps
+    
+    for i in range(0, num_steps * num_batches, num_steps):
+        X = Xs[:, i: i + num_steps]
+        Y = Ys[:, i: i + num_steps]
+        yield X, Y
+
+def test_seq_iter():
+    my_seq = list(range(35))
+    print("random:")
+    for X, Y in seq_data_iter_random(my_seq, batch_size=2, num_steps=5):
+        print('X: ', X, '\nY:', Y)
+
+    print("sequential:")
+    for X, Y in seq_data_iter_sequential(my_seq, batch_size=2, num_steps=5):
+        print('X: ', X, '\nY:', Y)
+
+def test_matmul():
+     x, wx = torch.normal(0, 1, (3,1)), torch.normal(0, 1, (1,4))
+     h, wh = torch.normal(0, 1, (3,4)), torch.normal(0, 1, (4,4))
+     print(torch.matmul(x, wx) + torch.matmul(h, wh))
+     print(torch.matmul(torch.cat((x, h), 1), torch.cat((wx, wh), 0)))
+    
+def test_one_hot():
+    x = F.one_hot(torch.tensor([0, 2]), 10)
+    print("one hot is :\n", x)
+
+    x = torch.arange(10).reshape((2, 5))
+    y = F.one_hot(x.T, 10)
+    print("x is :\n", x)
+    print("one hot is :\n", y)
+
+#@save
+DATA_HUB['time_machine'] = (DATA_URL + 'timemachine.txt', '090b5e7e70c295757f55df93cb0a180b9691891a')
+def read_time_machine(): #@save
+    """将时间机器数据集加载到文本行的列表中"""
+    with open(download('time_machine'), 'r') as f:
+        lines = f.readlines()
+    return [re.sub('[^A-Za-z]+', ' ', line).strip().lower() for line in lines]
+
+def load_corpus_time_machine(max_tokens=-1): #@save
+    """返回时光机器数据集的词元索引列表和词表"""
+    lines = read_time_machine()
+    tokens = tokenize(lines, 'char')
+    vocab = Vocab(tokens)
+    # 因为时光机器数据集中的每个文本行不一定是一个句子或一个段落，
+    # 所以将所有文本行展平到一个列表中
+    corpus = [vocab[token] for line in tokens for token in line]
+    if max_tokens > 0:
+        corpus = corpus[:max_tokens]
+    return corpus, vocab
+
+class SeqDataLoader: #@save
+    """加载序列数据的迭代器"""
+    def __init__(self, batch_size, num_steps, use_random_iter, max_tokens):
+        if use_random_iter:
+            self.data_iter_fn = seq_data_iter_random
+        else:
+            self.data_iter_fn = seq_data_iter_sequential
+        self.corpus, self.vocab = load_corpus_time_machine(max_tokens)
+        self.batch_size, self.num_steps = batch_size, num_steps
+    def __iter__(self):
+        return self.data_iter_fn(self.corpus, self.batch_size, self.num_steps)
+
+def load_data_time_machine(batch_size, num_steps, use_random_iter=False, max_tokens=10000):
+    """返回时光机器数据集的迭代器和词表"""
+    data_iter = SeqDataLoader(batch_size, num_steps, use_random_iter, max_tokens)
+    return data_iter, data_iter.vocab
+
+########
+def get_params(vocab_size, num_hiddens, device):
+    num_inputs = num_outputs = vocab_size
+    def normal(shape):
+        return torch.randn(size=shape, device=device) * 0.01
+    # 隐藏层参数
+    W_xh = normal((num_inputs, num_hiddens))
+    W_hh = normal((num_hiddens, num_hiddens))
+    b_h = torch.zeros(num_hiddens, device=device)
+    # 输出层参数
+    W_hq = normal((num_hiddens, num_outputs))
+    b_q = torch.zeros(num_outputs, device=device)
+    # 附加梯度
+    params = [W_xh, W_hh, b_h, W_hq, b_q]
+    for param in params:
+        param.requires_grad_(True)
+    return params
+
+def init_rnn_state(batch_size, num_hiddens, device):
+    return (torch.zeros((batch_size, num_hiddens), device=device), )
+
+def test_torch_cat():
+    o = []
+    o.append(torch.tensor([[0, 1, 2], [3,4,5]]))
+    o.append(torch.tensor([[10, 11, 12], [13,14,15]]))
+    o.append(torch.tensor([[20, 21, 22], [23,24,25]]))
+    torch.cat(o, dim=0)
+'''  output is :
+tensor([[ 0,  1,  2],
+        [ 3,  4,  5],
+        [10, 11, 12],
+        [13, 14, 15],
+        [20, 21, 22],
+        [23, 24, 25]])
+'''
+
+def rnn(inputs, state, params):
+    # inputs的形状： (时间步数量，批量大小，词表大小)
+    W_xh, W_hh, b_h, W_hq, b_q = params
+    H, = state
+    outputs = []
+    # X的形状： (批量大小，词表大小)
+    for X in inputs:
+        H = torch.tanh(torch.mm(X, W_xh) + torch.mm(H, W_hh) + b_h)
+        Y = torch.mm(H, W_hq) + b_q          # Y的形状：:(批量大小，词表大小）
+        outputs.append(Y)
+    return torch.cat(outputs, dim=0), (H,)   # output的形状：:(时间步数量*批量大小，词表大小）
+
+class RNNModelScratch: #@save
+    """从零开始实现的循环神经网络模型"""
+    def __init__(self, vocab_size, num_hiddens, device, get_params, init_state, forward_fn):
+        self.vocab_size, self.num_hiddens = vocab_size, num_hiddens
+        self.params = get_params(vocab_size, num_hiddens, device)
+        self.init_state, self.forward_fn = init_state, forward_fn
+        
+    def __call__(self, X, state):
+        X = F.one_hot(X.T, self.vocab_size).type(torch.float32)
+        return self.forward_fn(X, state, self.params)
+        
+    def begin_state(self, batch_size, device):
+        return self.init_state(batch_size, self.num_hiddens, device)
+
+def predict_ch8(prefix, num_preds, net, vocab, device): #@save
+    """在prefix后面生成新字符"""
+    state = net.begin_state(batch_size=1, device=device)
+    outputs = [vocab[prefix[0]]]
+    get_input = lambda: torch.tensor([outputs[-1]], device=device).reshape((1, 1))
+    for y in prefix[1:]: # 预热期
+        _, state = net(get_input(), state)
+        outputs.append(vocab[y])
+    for _ in range(num_preds): # 预测num_preds步
+        y, state = net(get_input(), state)
+        outputs.append(int(y.argmax(dim=1).reshape(1)))
+    return ''.join([vocab.idx_to_token[i] for i in outputs])
+
+#@save
+def train_epoch_ch8(net, train_iter, loss, updater, device, use_random_iter):
+    """训练网络一个迭代周期（定义见第8章） """
+    state, timer = None, Timer()
+    metric = Accumulator(2) # 训练损失之和,词元数量
+    for X, Y in train_iter:
+        if state is None or use_random_iter:
+            # 在第一次迭代或使用随机抽样时初始化state
+            state = net.begin_state(batch_size=X.shape[0], device=device)
+        else:
+            if isinstance(net, nn.Module) and not isinstance(state, tuple):
+                # state对于nn.GRU是个张量
+               state.detach_()
+            else:
+            # state对于nn.LSTM或对于我们从零开始实现的模型是个张量
+                for s in state:
+                    s.detach_()
+                    
+        y = Y.T.reshape(-1)
+        X, y = X.to(device), y.to(device)
+        y_hat, state = net(X, state)
+        #print(y_hat.shape, y.shape, X.shape, Y.shape)
+        
+        l = loss(y_hat, y.long()).mean()
+        if isinstance(updater, torch.optim.Optimizer):
+            updater.zero_grad()
+            l.backward()
+            grad_clipping(net, 1)
+            updater.step()
+        else:
+            l.backward()
+            grad_clipping(net, 1)
+            # 因为已经调用了mean函数
+            updater(batch_size=1)
+        metric.add(l * y.numel(), y.numel())
+    return math.exp(metric[0] / metric[1]), metric[1] / timer.stop()
+
+#@save
+def train_ch8(net, train_iter, vocab, lr, num_epochs, device, use_random_iter=False):
+    """训练模型（定义见第8章） """
+    loss = nn.CrossEntropyLoss()
+    animator = Animator(xlabel='epoch', ylabel='perplexity', legend=['train'], xlim=[10, num_epochs])
+    # 初始化
+    if isinstance(net, nn.Module):
+        updater = torch.optim.SGD(net.parameters(), lr)
+    else:
+        updater = lambda batch_size: sgd(net.params, lr, batch_size)
+        
+    predict = lambda prefix: predict_ch8(prefix, 50, net, vocab, device)
+    # 训练和预测
+    for epoch in range(num_epochs):
+        ppl, speed = train_epoch_ch8(net, train_iter, loss, updater, device, use_random_iter)
+        if (epoch + 1) % 10 == 0:
+            print(predict('time traveller'))
+            animator.add(epoch + 1, [ppl])
+    print(f'困惑度 {ppl:.1f}, {speed:.1f} 词元/秒 {str(device)}')
+    print(predict('time traveller'))
+    print(predict('traveller'))
+
+def test_rnn_from_zero():
+    batch_size, num_steps = 32, 35
+    train_iter, vocab = load_data_time_machine(batch_size, num_steps)
+    print(len(vocab))
+    for x, y in train_iter:
+        print('X: ', x.shape, '\nY:', y.shape)
+        print('X: ', x, '\nY:', y)
+        break
+
+    num_hiddens = 512
+    num_epochs, lr = 500, 1
+    ##############
+    net = RNNModelScratch(len(vocab), num_hiddens, try_gpu(), get_params, init_rnn_state, rnn)
+    X = torch.arange(10).reshape((2, 5))
+    state = net.begin_state(X.shape[0], try_gpu())
+    Y, new_state = net(X.to(try_gpu()), state)
+    Y.shape, len(new_state), new_state[0].shape
+    
+    ################
+    net = RNNModelScratch(len(vocab), num_hiddens, try_gpu(), get_params, init_rnn_state, rnn)
+    train_ch8(net, train_iter, vocab, lr, num_epochs, try_gpu())
+    
+    #################
+    net = RNNModelScratch(len(vocab), num_hiddens, try_gpu(), get_params, init_rnn_state, rnn)
+    train_ch8(net, train_iter, vocab, lr, num_epochs, try_gpu(), use_random_iter=True)
+    
+#########################################################
 #@save
 DATA_HUB['fra-eng'] = (DATA_URL + 'fra-eng.zip', '94646ad1522d915e7b0f9296181140edcf86a4f5')
 def read_data_nmt():
