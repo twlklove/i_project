@@ -21,6 +21,15 @@ from torch import nn
 import torch.nn.functional as F
 import re
 import collections
+def test_rand():
+    import torch
+    n_train = 10
+    print(torch.rand((2,3)))  #[0, 1)范围内的均匀分布的浮点随机数， rand_like
+    print(torch.randint(1, 5, (2,3))) #[low, high)范围内的均匀分布的随机数, low默认是0, randint_like
+    print(torch.randn((2,3))) #均值为0，标准差为1的标准正态分布随机数, randn_like
+    print(torch.normal(0.0, 0.5, (n_train,))) #mean,std可以指定的正态分布随机数
+    print(torch.arange(0, 5, 1))
+    print(torch.sort(torch.randint(1, 5, (5,))))
     
 def test_0():
     print(inspect.currentframe())
@@ -352,7 +361,7 @@ def plot(x, y=None, xlabel=None, ylabel=None, legend=None, xlim=None,
             axes.plot(y, fmt)
 
     set_axes(axes, xlabel, ylabel, xlim, ylim, xscale, yscale, legend)
-    plt.show()
+    #plt.show()
     
 class Timer:
     def __init__(self) :
