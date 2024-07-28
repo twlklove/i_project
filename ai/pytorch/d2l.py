@@ -891,11 +891,11 @@ def get_params(vocab_size, num_hiddens, device):
     def normal(shape):
         return torch.randn(size=shape, device=device) * 0.01
     # 隐藏层参数
-    W_xh = normal((num_inputs, num_hiddens))
-    W_hh = normal((num_hiddens, num_hiddens))
+    W_xh = normal((num_inputs, num_hiddens))     # d * h
+    W_hh = normal((num_hiddens, num_hiddens))    # h * h
     b_h = torch.zeros(num_hiddens, device=device)
     # 输出层参数
-    W_hq = normal((num_hiddens, num_outputs))
+    W_hq = normal((num_hiddens, num_outputs))   # h * d
     b_q = torch.zeros(num_outputs, device=device)
     # 附加梯度
     params = [W_xh, W_hh, b_h, W_hq, b_q]
@@ -1082,9 +1082,13 @@ def test_rnn_using_torch():
     train_iter, vocab = load_data_time_machine(batch_size, num_steps)
     
     num_hiddens = 256
-    rnn_layer = nn.RNN(len(vocab), num_hiddens)
-    state = torch.zeros((1, batch_size, num_hiddens))
+    rnn_layer = nn.RNN(len(vocab), num_hiddens)         # d * h
+    state = torch.zeros((1, batch_size, num_hiddens))   #（隐藏层数，批量大小，隐藏单元数）: 1 * n * h
     print(state.shape)
+
+    X = torch.rand(size=(num_steps, batch_size, len(vocab)))
+    Y, state_new = rnn_layer(X, state)
+    print(Y.shape, state_new.shape)   #Y: t * n *  h   state_new:1 * n *h 
 
     device = try_gpu()
     net = RNNModel(rnn_layer, vocab_size=len(vocab))
