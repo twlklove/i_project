@@ -21,6 +21,57 @@ from torch import nn
 import torch.nn.functional as F
 import re
 import collections
+
+def test_test():
+    #word2id = {'i':1, "like":2, "you":3, "want":4, "an":5, "apple":6}
+    #list 1: i like youe ==> [1, 2, 3] ==(padding 0)==> [1 , 2, 3, 0]
+    #list 2: i want an apple ==> [1, 4, 5, 6]
+    #embedding=torch.nn.Embedding(100, 6)  # num_embeddings, embedding_dim
+    #input = torch.tensor([[1, 2, 3, 0], [1, 4, 5, 6]])  # N * W: [[list1], [list2]]
+    #output = embedding(input)   #N * W * D
+    #print(input.shape)
+    #print(output.shape)
+    #print(output)
+
+    x = torch.tensor([[1,2,3],[4,5,6]])
+    print(x)
+    x1 = torch.repeat_interleave(x, repeats=2, dim=0)
+    print(x1)
+    x2 = torch.repeat_interleave(x, repeats=2, dim=1)
+    print(x2)
+    x3 = torch.repeat_interleave(x, repeats=torch.tensor([2,3]), dim=0)
+    print(x3)
+    x4 = torch.repeat_interleave(x, repeats=torch.tensor([2,3,1]), dim=1)
+    print(x4)
+
+    x5 = torch.tensor([3,2])
+    print(torch.repeat_interleave(x5, repeats=5, dim=0))
+    x6 = torch.tensor([[[1,2,3,4],[5,6,7,8]], [[21,22,23,24],[25,26,27,28]]])
+    print(x6.dim(), x6.shape, x6.reshape(-1))
+    print(x6.reshape(-1, 4))
+
+    def sequence_mask(X, valid_len, value=0):
+        maxlen = X.size(1)
+        mask = torch.arange((maxlen), dtype=torch.float32, device=X.device)[None, :] < valid_len[:, None]
+        print(mask)
+        X[~mask] = value
+        return X
+
+    X = torch.tensor([[1, 2, 3], [4, 5, 6]])
+    valid_len = torch.tensor([1, 2])
+    z = torch.arange((3))
+    print(z, z[None,:])
+    print(X.size(1), valid_len[:, None])
+    sequence_mask(X, valid_len)
+    #X = torch.ones(2, 3, 4)
+    #sequence_mask(X, torch.tensor([1, 2]), value=-1)
+
+    #torch.repeat_interleave(x5, shape[1])
+
+    z1 = torch.tensor([[0,1,2]])
+    z2 = torch.tensor([[1],[2]])
+    z3 = z1 < z2
+    print(z2[:None], z3)
 def test_rand():
     import torch
     n_train = 10
@@ -1614,17 +1665,51 @@ def test_transformer():
         translation, dec_attention_weight_seq = predict_seq2seq(net, eng, src_vocab, tgt_vocab, num_steps, device, True)
         print(f'{eng} => {translation}, ',  f'bleu {bleu(translation, fra, k=2):.3f}')
 
+
+import seaborn as sns
+import math
+def get_positional_encoding(max_seq_len, embed_dim):
+    # 初始化一个positional encoding
+    # embed_dim: 字嵌入的维度
+    # max_seq_len: 最大的序列长度
+    positional_encoding = np.array([
+        [pos / np.power(10000, 2 * i / embed_dim) for i in range(embed_dim)]
+        if pos != 0 else np.zeros(embed_dim) for pos in range(max_seq_len)])
+    
+    positional_encoding[1:, 0::2] = np.sin(positional_encoding[1:, 0::2])  # dim 2i 偶数
+    positional_encoding[1:, 1::2] = np.cos(positional_encoding[1:, 1::2])  # dim 2i+1 奇数
+    return positional_encoding
+
+def test_7():
+    positional_encoding = get_positional_encoding(max_seq_len=100, embed_dim=16)
+    plt.figure(figsize=(10,10))
+    sns.heatmap(positional_encoding)
+    plt.title("Sinusoidal Function")
+    plt.xlabel("hidden dimension")
+    plt.ylabel("sequence length")
+
+    plt.figure(figsize=(8, 5))
+    plt.plot(positional_encoding[1:, 1], label="dimension 1")
+    plt.plot(positional_encoding[1:, 2], label="dimension 2")
+    plt.plot(positional_encoding[1:, 3], label="dimension 3")
+    plt.legend()
+    plt.xlabel("Sequence length")
+    plt.ylabel("Period of Positional Encoding")
+    
 if __name__ == '__main__':
-    test_0()
-    test_1()
-    test_2()
-    test_3()
-    test_4()
-    test_5()
-    test_6()
-    test_timer()
-    test_load_data_fashion_mnist()
-    test_fishion_mnist_data_set()
-    test_position_encoding()
-    test_ffn()
+    #test_0()
+   # test_1()
+    #test_2()
+    #test_3()
+    #test_4()
+    #test_5()
+   # test_6()
+    #test_timer()
+    #test_load_data_fashion_mnist()
+    #test_fishion_mnist_data_set()
+    #test_position_encoding()
+    #test_ffn()
+    #test_7()
+    #test_test()
+    test_transformer()
 
