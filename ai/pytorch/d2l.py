@@ -22,6 +22,79 @@ import torch.nn.functional as F
 import re
 import collections
 
+def test_test_0():
+    print(torch.arange(3))
+    print(torch.arange(3)[None, :])
+    valid_len = torch.tensor([1, 2])
+    print(valid_len[:, None])
+    mask = torch.arange(3)[None, :] < valid_len[:, None]
+    print(mask)
+
+    pred = torch.ones(3, 4, 10)
+    label = torch.ones((3, 4), dtype=torch.long)
+    valid_len = torch.tensor([4, 2, 0])
+    weights = torch.ones_like(label)
+    weights = d2l.sequence_mask(weights, valid_len)
+    print(weights)
+    unweighted_loss = nn.CrossEntropyLoss().forward(pred.permute(0, 2, 1), label)
+    print(unweighted_loss)
+    print(unweighted_loss * weights)
+    weighted_loss = (unweighted_loss * weights).mean(dim=1)
+    print(weighted_loss)
+
+    train_iter, src_vocab, tgt_vocab = d2l.load_data_nmt(batch_size=3, num_steps=8)
+    for X, X_valid_len, Y, Y_valid_len in train_iter:
+        print('X:', X.type(torch.int32))
+        print('X的有效长度:', X_valid_len)
+        print('Y:', Y.type(torch.int32))
+        print('Y的有效长度:', Y_valid_len)
+        bos = torch.tensor([tgt_vocab['<bos>']] * Y.shape[0]).reshape(-1, 1)
+        print('bos is :', bos)
+        print(Y[:, :-1])
+        dec_input = torch.cat([bos, Y[:, :-1]], 1)
+        print(dec_input)
+        dec_input1 = torch.cat((bos, Y[:, :-1]), 1)
+        print(dec_input1)
+        break
+
+    nrows=1
+    ncols=1
+    figsize=(3.5, 2.5)
+    fig, axes = plt.subplots(nrows, ncols, figsize=figsize)
+
+    x = [[1], [2], [3]]
+    y = [[4], [5], [6]]
+    for i, j in zip(x, y):
+        print(i,j)
+
+    y = torch.tensor([0, 2])
+    y_hat = torch.tensor([[0.1, 0.3, 0.6], [0.3, 0.2, 0.5]])
+    print(y_hat[[0, 1], y])
+    for i in range(len(y_hat)):
+        print(i)
+
+    data = [0.0] * 2
+    for a, b in zip(data, (1,2)):
+        print(a,b)
+
+    y = torch.tensor([0.1, 0.2])
+    print(y.sum())
+    #import os    
+    #print(os.path.splitext('/root/hello.zip'))
+
+    #out = ['hello ', 'world']
+    #print(''.join(out))
+
+    #array = torch.tensor([[0,3,1], [0, 1, 1]])
+    #vocab = torch.tensor([[1]])
+    #print((array != vocab).type(torch.int32).sum(1))
+
+    #from torch.utils import data
+    #label = torch.tensor([[1], [3]])
+    #data_arrays = (array, label)
+    #dataset = data.TensorDataset(*data_arrays)
+    #train_iter, src_vocab, tgt_vocab = data.DataLoader(dataset, 2, shuffle=True)
+
 def test_test():
     #word2id = {'i':1, "like":2, "you":3, "want":4, "an":5, "apple":6}
     #list 1: i like youe ==> [1, 2, 3] ==(padding 0)==> [1 , 2, 3, 0]
@@ -35,6 +108,8 @@ def test_test():
 
     x = torch.tensor([[1,2,3],[4,5,6]])
     print(x)
+    x1 = torch.repeat_interleave(x, repeats=2)
+    print(x1)
     x1 = torch.repeat_interleave(x, repeats=2, dim=0)
     print(x1)
     x2 = torch.repeat_interleave(x, repeats=2, dim=1)
@@ -57,6 +132,7 @@ def test_test():
         X[~mask] = value
         return X
 
+    print('hello')
     X = torch.tensor([[1, 2, 3], [4, 5, 6]])
     valid_len = torch.tensor([1, 2])
     z = torch.arange((3))
@@ -1291,8 +1367,7 @@ class MaskedSoftmaxCELoss(nn.CrossEntropyLoss):
         weights = torch.ones_like(label)
         weights = sequence_mask(weights, valid_len)
         self.reduction='none'
-        unweighted_loss = super(MaskedSoftmaxCELoss, self).forward(
-        pred.permute(0, 2, 1), label)
+        unweighted_loss = super(MaskedSoftmaxCELoss, self).forward(pred.permute(0, 2, 1), label)
         weighted_loss = (unweighted_loss * weights).mean(dim=1)
         return weighted_loss
 
@@ -1649,7 +1724,7 @@ def test_transformer():
     ffn_num_input, ffn_num_hiddens, num_heads = 32, 64, 4
     key_size, query_size, value_size = 32, 32, 32
     norm_shape = [32]
-
+    
     train_iter, src_vocab, tgt_vocab = load_data_nmt(batch_size, num_steps)
     encoder = TransformerEncoder(len(src_vocab), key_size, query_size, value_size, num_hiddens, norm_shape, 
                                  ffn_num_input, ffn_num_hiddens, num_heads, num_layers, dropout)
@@ -1680,5 +1755,6 @@ if __name__ == '__main__':
     #test_ffn()
     #test_7()
     #test_test()
+    #test_test_0()
     test_transformer()
 
