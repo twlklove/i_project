@@ -11,6 +11,8 @@ vim /etc/ssh/sshd_config
 service ssh starting
 
 ######################
+sudo apt update
+sudo apt upgrade
 apt install -y git
 apt install -y linux-source
 apt install -y linux-headers-$(uname -r)
@@ -28,9 +30,19 @@ apt install -y w3m w3m-img  #brower
 apt install -y curl
 apt install -y wget
 
-pip3 install numpy
-pip3 install pandas
-pip3 install matplotlib
+#### for python
+ln -s /usr/bin/python3 /usr/bin/python
+apt install -y pip
+pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+apt install -y python`python --version | cut -d' ' -f2 | cut -d'.' -f1-2`-venv
+
+# 创建虚拟环境
+python3 -m venv i_env
+# 激活虚拟环境  #退出: deactivate
+source i_env/bin/activate
+pip install numpy
+pip install pandas
+pip install matplotlib
 
 #open teminal on machine starting
 echo "gnome-terminal &" >> ~/.bashrc
