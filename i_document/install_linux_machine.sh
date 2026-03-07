@@ -27,3 +27,10 @@ apt install -y valgrind
 apt install -y w3m w3m-img  #brower
 apt install -y curl
 apt install -y wget
+
+pip3 install numpy
+pip3 install pandas
+pip3 install matplotlib
+
+#open teminal on machine starting
+echo "gnome-terminal &" >> ~/.bashrc
