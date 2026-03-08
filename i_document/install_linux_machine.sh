@@ -30,7 +30,7 @@ apt install -y w3m w3m-img  #brower
 apt install -y curl
 apt install -y wget
 
-#### for python
+####################### for python ######################
 ln -s /usr/bin/python3 /usr/bin/python
 apt install -y pip
 pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
@@ -43,6 +43,23 @@ source i_env/bin/activate
 pip install numpy
 pip install pandas
 pip install matplotlib
+##################################################
 
+######################  for AI ################
+# nvidia-smi #look at gpu info
+sudo apt install nvidia-cuda-toolkit
+pip install torch
+
+# install opencode
+curl -fsSL https://opencode.ai/install | bash
+
+# install openclaw
+curl -fsSL https://openclaw.ai/install.sh | bash
+
+# install ollama
+curl -fsSL https://ollama.com/install.sh | sh
+
+###################################################
+#
 #open teminal on machine starting
-echo "gnome-terminal &" >> ~/.bashrc
+#echo "gnome-terminal &" >> ~/.bashrc
